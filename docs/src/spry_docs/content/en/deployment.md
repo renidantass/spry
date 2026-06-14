@@ -74,7 +74,7 @@ APP__database__url=postgresql://user:pass@host/prod_db spry run --app app:create
 Every Spry application automatically exposes:
 
 ```
-GET /health ? {"status": "ok", "version": "0.1.0", "uptime_seconds": 1234}
+GET /health ? {"status": "ok", "version": "0.2.5", "uptime_seconds": 1234}
 ```
 
 ## Logging

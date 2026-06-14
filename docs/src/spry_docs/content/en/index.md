@@ -27,5 +27,5 @@ Spry makes sense if you want:
 - A quick starting path for small and medium projects
 
 {% note type="tip" %}
-Spry is at v0.x — the API is evolving, but the proposal is already clear: productivity with simple, readable code.
+Spry is at v0.x â€” the API is evolving, but the proposal is already clear: productivity with simple, readable code.
 {% endnote %}

@@ -263,7 +263,7 @@ class Playground:
         self.rows = rows
 
     def render(self) -> str:
-        code_escaped = escape(self.code)
+        highlighted = highlight(self.code, self.language)
         return (
             f'<div class="pg">'
             f'<div class="pg-hd">'
@@ -271,12 +271,9 @@ class Playground:
             f'<button class="pg-run" onclick="runPlayground(this)">'
             f'<span class="pg-spinner"></span> Run ▶</button>'
             f'</div>'
-            f'<div class="pg-wrap">'
-            f'<pre class="pg-highlight" aria-hidden="true"><code>{highlight(self.code, self.language)}</code></pre>'
-            f'<textarea class="pg-ed" data-lang="{self.language}" rows="{self.rows}"'
-            f' oninput="highlightPlayground(this)" onscroll="syncPlaygroundScroll(this)">'
-            f'{code_escaped}'
-            f'</textarea>'
+            f'<div class="pg-ed" contenteditable="true" data-lang="{self.language}"'
+            f' oninput="highlightPlayground(this)" spellcheck="false">'
+            f'{highlighted}'
             f'</div>'
             f'<pre class="pg-out">Click "Run" to execute</pre>'
             f'</div>'
@@ -339,12 +336,12 @@ class Layout:
   <a href="{self.base_url}/" class="tb-brand">spry</a>
   <div class="tb-nav">
     <a href="{self.base_url}/docs/getting-started" class="tb-link">Docs</a>
-    <a href="{self.base_url}/api/spry/app" class="tb-link">API</a>
+    <a href="{self.base_url}/api/app" class="tb-link">API</a>
     <a href="{self.base_url}/playground" class="tb-link">Playground</a>
   </div>
   <div class="tb-right">
     {vs}
-    <a href="#" onclick="event.preventDefault();document.cookie='spry_locale={alt_locale};path=/';window.location.href='{self.base_url}/docs/getting-started'" class="tb-locale">{alt_label}</a>
+    <a href="{self.base_url}/{alt_locale}/docs/getting-started" class="tb-locale">{alt_label}</a>
     <button class="tb-menu" onclick="toggleMobileMenu()">☰</button>
   </div>
 </div>
@@ -353,7 +350,7 @@ class Layout:
   <div class="mn-inner">
     <a href="{self.base_url}/" class="mn-link">Home</a>
     <a href="{self.base_url}/docs/getting-started" class="mn-link">Docs</a>
-    <a href="{self.base_url}/api/spry/app" class="mn-link">API</a>
+    <a href="{self.base_url}/api/app" class="mn-link">API</a>
     <a href="{self.base_url}/playground" class="mn-link">Playground</a>
     {search}
   </div>
@@ -415,6 +412,20 @@ document.addEventListener('click', function(e) {{
   const rs = document.getElementById('searchResults');
   if (rs && !e.target.closest('.srch')) {{
     rs.style.display = 'none';
+  }}
+}});
+
+document.addEventListener('keydown', function(e) {{
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {{
+    e.preventDefault();
+    const inp = document.getElementById('searchInput');
+    if (inp) inp.focus();
+  }}
+  if (e.key === 'Escape') {{
+    const rs = document.getElementById('searchResults');
+    if (rs) {{ rs.style.display = 'none'; }}
+    const inp = document.getElementById('searchInput');
+    if (inp) inp.blur();
   }}
 }});
 
@@ -498,28 +509,51 @@ function highlightCode(code, language) {{
   return escaped;
 }}
 
-function highlightPlayground(textarea) {{
-  const wrap = textarea.closest('.pg-wrap');
-  if (!wrap) return;
-  const pre = wrap.querySelector('.pg-highlight code');
-  if (!pre) return;
-  const lang = textarea.dataset.lang || 'python';
-  pre.innerHTML = highlightCode(textarea.value, lang);
+function _saveCursorPos(div) {{
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return 0;
+  const range = sel.getRangeAt(0);
+  const pre = document.createRange();
+  pre.selectNodeContents(div);
+  pre.setEnd(range.startContainer, range.startOffset);
+  return pre.toString().length;
 }}
 
-function syncPlaygroundScroll(textarea) {{
-  const wrap = textarea.closest('.pg-wrap');
-  if (!wrap) return;
-  const pre = wrap.querySelector('.pg-highlight');
-  if (!pre) return;
-  pre.scrollTop = textarea.scrollTop;
-  pre.scrollLeft = textarea.scrollLeft;
+function _restoreCursorPos(div, pos) {{
+  const sel = window.getSelection();
+  const range = document.createRange();
+  let char = 0;
+  const walk = document.createTreeWalker(div, NodeFilter.SHOW_TEXT, null, false);
+  let node;
+  while ((node = walk.nextNode())) {{
+    const len = node.textContent.length;
+    if (char + len >= pos) {{
+      range.setStart(node, pos - char);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+      return;
+    }}
+    char += len;
+  }}
+  range.selectNodeContents(div);
+  range.collapse(false);
+  sel.removeAllRanges();
+  sel.addRange(range);
+}}
+
+function highlightPlayground(div) {{
+  const lang = div.dataset.lang || 'python';
+  const pos = _saveCursorPos(div);
+  const text = div.textContent;
+  div.innerHTML = highlightCode(text, lang);
+  _restoreCursorPos(div, Math.min(pos, text.length));
 }}
 /* --- End syntax highlighting --- */
 
 async function runPlayground(btn) {{
   const pg = btn.closest('.pg');
-  const code = pg.querySelector('.pg-ed').value;
+  const code = pg.querySelector('.pg-ed').textContent;
   const output = pg.querySelector('.pg-out');
   btn.classList.add('is-loading');
   output.textContent = '';

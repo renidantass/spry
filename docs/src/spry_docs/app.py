@@ -279,7 +279,9 @@ def create_app() -> Any:
         return Response.html(html)
 
     def search_index(request: Request) -> Response:
-        locale = _detect_locale(request)
+        locale = request.query.get("locale", "")
+        if locale not in ("pt", "en"):
+            locale = _detect_locale(request)
         index = _build_search_index(locale, base_url)
         return Response.json(index)
 
@@ -419,15 +421,69 @@ def create_app() -> Any:
 
     builder.map_get(base_url or "/", landing_page)
     def docs_page_locale(locale: str, slug: str, request: Request) -> Response:
-        # Set locale cookie and redirect to the standard path
-        import json
-        from spry.http import Response as R
-        resp = docs_page(slug, request)
+        # Force the given locale regardless of cookie/headers
+        if locale not in ("pt", "en"):
+            locale = "pt"
+        forced_pages = _load_pages(locale)
+        if slug not in PAGE_ORDER:
+            body = (
+                f'<h1>Página não encontrada</h1>'
+                f'<p>A documentação para <code>{slug}</code> não foi encontrada.</p>'
+                f'<a href="{base_url}/docs/getting-started" class="btn btn-primary">Ver documentação</a>'
+            )
+            html = Layout(base_url=base_url,
+                title="404",
+                description="Page not found",
+                body=body,
+                active_slug="",
+                pages=forced_pages,
+                locale=locale,
+                version=VERSION,
+                versions=VERSIONS,
+            ).render()
+            return Response.html(html, status_code=404)
+        md_path = CONTENT_DIR / locale / f"{slug}.md"
+        if not md_path.exists():
+            md_path = CONTENT_DIR / "pt" / f"{slug}.md"
+        if not md_path.exists():
+            return Response.html("<h1>Not found</h1>", status_code=404)
+        fm, blocks = parse_markdown(md_path.read_text("utf-8"))
+        title = DOC_TITLES.get(slug, {}).get(locale, fm.title or slug)
+        desc = DOC_DESCRIPTIONS.get(slug, {}).get(locale, "")
+        toc_items = "".join(
+            f'<a href="#{slugify(b.content)}" class="sb-item sb-toc">{b.content}</a>'
+            for b in blocks if b.type == "heading" and b.level == 2
+        )
+        sections_html = "".join(render_block(b) for b in blocks)
+        body = (
+            f'<nav class="bc">'
+            f'<span class="bc-item"><a href="{base_url or "/"}">Spry</a></span>'
+            f'<span class="bc-sep">/</span>'
+            f'<span class="bc-item">{title}</span>'
+            f'</nav>'
+            f'<h1>{title}</h1>'
+            f'<p class="page-desc">{desc}</p>'
+            f'<div class="toc">{toc_items}</div>'
+            f'{sections_html}'
+        )
+        html = Layout(base_url=base_url,
+            title=title,
+            description=desc or fm.description,
+            body=body,
+            active_slug=slug,
+            pages=forced_pages,
+            locale=locale,
+            version=VERSION,
+            versions=VERSIONS,
+            canonical=f"{base_url}/{locale}/docs/{slug}",
+        ).render()
+        resp = Response.html(html)
         resp.set_cookie("spry_locale", locale, path="/")
         return resp
 
     builder.map_get(f"{base_url}/docs/{{slug}}", docs_page)
     builder.map_get(f"{base_url}/docs/{{locale}}/{{slug}}", docs_page_locale)
+    builder.map_get(f"{base_url}/{{locale}}/docs/{{slug}}", docs_page_locale)
     builder.map_get(f"{base_url}/search-index.json", search_index)
     builder.map_get(f"{base_url}/api", lambda request: api_page("", request))
     builder.map_get(f"{base_url}/api/", lambda request: api_page("", request))
