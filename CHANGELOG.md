@@ -40,6 +40,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 [0.1.0]: https://github.com/renidantass/spry/releases/tag/v0.1.0
 
+## v0.4.1 (2026-06-14)
+
+### Fix
+
+- docs site — favicon, sidebar locale, search index, playground error handling
+
 ## v0.4.0 (2026-06-14)
 
 ### Feat
