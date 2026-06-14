@@ -40,6 +40,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 [0.1.0]: https://github.com/renidantass/spry/releases/tag/v0.1.0
 
+## v0.2.3 (2026-06-14)
+
+### Fix
+
+- Phase 2 resilience — JSON safety, multipart limits, CORS Vary, CSRF edge cases, cookie attributes
+- critical resilience fixes — SQL injection prevention, threading locks, CSRF fix, concurrency tests
+
 ## v0.2.2 (2026-06-14)
 
 ### Refactor
