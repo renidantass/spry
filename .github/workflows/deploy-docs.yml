@@ -3,9 +3,6 @@ name: Deploy Docs to GitHub Pages
 on:
   push:
     branches: [main]
-    paths:
-      - 'docs/**'
-      - 'src/spry/**'
   workflow_dispatch:
 
 permissions:
