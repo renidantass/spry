@@ -1,12 +1,16 @@
 from __future__ import annotations
 
-from spry import AuthenticatedController, CookieAuthService, HtmlString, Request, ViewRenderer, authorize, controller, get, post
+from spry import AuthenticatedController, CookieAuthService, HtmlString, PasswordHasher, Request, ViewRenderer, authorize, controller, get, post
+
+from __PACKAGE_NAME__.data import AppDbContext
 
 
 @controller("")
 class AccountController(AuthenticatedController):
-    def __init__(self, view_renderer: ViewRenderer, auth: CookieAuthService) -> None:
+    def __init__(self, view_renderer: ViewRenderer, auth: CookieAuthService, db: AppDbContext) -> None:
         super().__init__(view_renderer, auth)
+        self.db = db
+        self.hasher = PasswordHasher()
 
     @get("/login")
     def login(self):
@@ -20,8 +24,12 @@ class AccountController(AuthenticatedController):
         if not username or not password:
             return self._render_login("Informe usuario e senha.", status_code=400)
 
+        user = self.db.users.first(username=username)
+        if user is None or not self.hasher.verify(password, user.password_hash):
+            return self._render_login("Usuario ou senha invalidos.", status_code=401)
+
         response = self.redirect("/")
-        return self.sign_in(response, user_id=username.lower(), name=username, claims={"role": "admin"})
+        return self.sign_in(response, user_id=str(user.id), name=user.display_name, claims={"role": user.roles})
 
     @post("/logout")
     @authorize()

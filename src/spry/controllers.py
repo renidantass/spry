@@ -69,7 +69,13 @@ class Controller(ControllerBase):
         return self.html(markup, status_code=status_code)
 
     def partial_view(self, view_name: str, model: Mapping[str, Any] | None = None) -> HtmlString:
-        return self._view_renderer.render_partial(view_name, model)
+        full_model = dict(model or {})
+        if "csrf_input" not in full_model and hasattr(self, 'request'):
+            token = self.request.items.get("csrf_token", "")
+            field_name = self.request.items.get("csrf_field_name", "__csrf")
+            if token:
+                full_model["csrf_input"] = HtmlString(f'<input type="hidden" name="{field_name}" value="{token}" />')
+        return self._view_renderer.render_partial(view_name, full_model)
 
 
 class AuthenticatedController(Controller):
