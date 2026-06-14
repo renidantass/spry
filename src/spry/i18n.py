@@ -2,11 +2,17 @@ from __future__ import annotations
 
 import gettext
 import logging
-import os
+import warnings
 from pathlib import Path
 from typing import Any
 
 logger = logging.getLogger("spry.i18n")
+
+
+class _DictTranslations(gettext.GNUTranslations):
+    def __init__(self, mapping: dict[str, str]) -> None:
+        super().__init__()
+        self._catalog = mapping
 
 
 class I18nService:
@@ -38,18 +44,13 @@ class I18nService:
         po_path = self._locale_dir / locale / "LC_MESSAGES" / "messages.po"
         if po_path.exists():
             try:
-                import warnings
                 with warnings.catch_warnings():
                     warnings.simplefilter("ignore")
                     import polib
-                    po = polib.pofile(str(po_path))
-                    translation_map = {entry.msgid: entry.msgstr for entry in po if entry.msgstr}
-                    class DictTranslations(gettext.GNUTranslations):
-                        def __init__(self) -> None:
-                            super().__init__()
-                            self._catalog = translation_map
-                    self._translations[locale] = DictTranslations()
-                    return self._translations[locale]
+                po = polib.pofile(str(po_path))
+                translation_map = {entry.msgid: entry.msgstr for entry in po if entry.msgstr}
+                self._translations[locale] = _DictTranslations(translation_map)
+                return self._translations[locale]
             except ImportError:
                 pass
         return None

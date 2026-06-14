@@ -93,23 +93,18 @@ class SessionMiddleware:
         request: Request = context.request
         raw_sid = request.cookies.get(self._cookie_name)
 
-        sid = None
+        sid: str | None = None
         if raw_sid:
             if self._use_signing:
                 sid = self._store._verify(raw_sid) if hasattr(self._store, "_verify") else raw_sid
             else:
                 sid = raw_sid
 
-        session_exists = sid is not None and self._store.exists(sid)
-
-        if not session_exists:
+        if sid is None or not self._store.exists(sid):
             sid = secrets.token_urlsafe(32)
             self._store.set(sid, {})
 
         session_data = self._store.get(sid) or {}
-        if session_data is None:
-            session_data = {}
-            self._store.set(sid, {})
 
         request.items["session"] = session_data
         request.items["session_id"] = sid

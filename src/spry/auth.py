@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import hashlib
 import hmac
-import json
 import logging
 import secrets
 import threading
@@ -57,18 +56,20 @@ class PasswordHasher:
 
 
 _DEV_SECRET_WARNED = False
+_DEV_SECRET_LOCK = threading.Lock()
 
 
 def _warn_dev_secret() -> None:
     global _DEV_SECRET_WARNED
-    if not _DEV_SECRET_WARNED:
-        import logging
-        logging.getLogger("spry").warning(
-            "Using default auth secret 'spry-dev-secret'. "
-            "Set a strong secret via 'auth.secret_key' in appsettings.json "
-            "or pass it explicitly to add_auth()."
-        )
+    with _DEV_SECRET_LOCK:
+        if _DEV_SECRET_WARNED:
+            return
         _DEV_SECRET_WARNED = True
+    logger.warning(
+        "Using default auth secret 'spry-dev-secret'. "
+        "Set a strong secret via 'auth.secret_key' in appsettings.json "
+        "or pass it explicitly to add_auth()."
+    )
 
 
 class LoginTracker:
@@ -170,8 +171,18 @@ class CookieAuthService:
 
 
 class JwtAuthService:
+    SUPPORTED_ALGORITHMS = frozenset({"HS256", "HS384", "HS512"})
+
     def __init__(self, secret_key: str, algorithm: str = "HS256", ttl: int = 3600) -> None:
-        self._signer = TokenSigner(secret_key)
+        if algorithm not in self.SUPPORTED_ALGORITHMS:
+            raise NotImplementedError(
+                f"Algorithm '{algorithm}' is not supported. "
+                f"Currently supported: {sorted(self.SUPPORTED_ALGORITHMS)}. "
+                "Asymmetric algorithms (RS256, ES256) require the optional 'cryptography' extra."
+            )
+        if not secret_key:
+            raise ValueError("JwtAuthService requires a non-empty secret_key")
+        self._signer = TokenSigner(secret_key, algorithm=algorithm)
         self.algorithm = algorithm
         self.ttl = ttl
 

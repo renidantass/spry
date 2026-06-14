@@ -1,5 +1,5 @@
 from spry.controllers import AuthenticatedController, Controller, ControllerBase, serve_static_file
-from spry.http import Request, Response, UploadedFile
+from spry.http import Request, Response, StreamingResponse, UploadedFile
 from spry.middleware import HttpContext
 from spry.openapi import OpenApiBuilder
 from spry.results import ActionResult, bad_request, created, no_content, not_found, ok
@@ -16,6 +16,7 @@ __all__ = [
     "OpenApiBuilder",
     "Request",
     "Response",
+    "StreamingResponse",
     "SpryTemplateEngine",
     "TemplateEngine",
     "UploadedFile",

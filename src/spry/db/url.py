@@ -36,15 +36,19 @@ def parse_database_url(url: str) -> DatabaseUrl:
     password = unquote(parsed.password) if parsed.password else None
     host = parsed.hostname
     port = parsed.port
-    database = parsed.path.lstrip("/") if parsed.path else ""
 
     if protocol == "sqlite":
-        if host and host != ":memory:":
-            path = f"{host}/{database}" if database else host
-            return DatabaseUrl(protocol="sqlite", database=path)
-        database = ":memory:" if host == ":memory:" else database
+        # Preserve the absolute path when the URL uses sqlite:////abs/path
+        # (urlparse normalizes this to a path that starts with two slashes).
+        if parsed.path.startswith("//"):
+            database = parsed.path[1:]
+        elif host and host != ":memory:":
+            database = f"{host}{parsed.path}" if parsed.path else host
+        else:
+            database = ":memory:" if host == ":memory:" else parsed.path.lstrip("/")
         return DatabaseUrl(protocol="sqlite", database=database)
 
+    database = parsed.path.lstrip("/") if parsed.path else ""
     return DatabaseUrl(
         protocol=protocol,
         username=username,

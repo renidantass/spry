@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 from copy import deepcopy
 from dataclasses import fields, is_dataclass
 from pathlib import Path
 from typing import Any, get_args, get_origin
+
+logger = logging.getLogger("spry.config")
 
 
 class Configuration:
@@ -61,8 +64,7 @@ class Configuration:
         if strict and section:
             extra = [k for k in self._data.get(section, {}) if k.lower() not in {f.name.lower() for f in fields(model_type)}]
             if extra:
-                import logging
-                logging.getLogger("spry.config").warning("Extra config keys in section '%s': %s", section, extra)
+                logger.warning("Extra config keys in section '%s': %s", section, extra)
         return _bind_model(model_type, source)
 
 
@@ -150,8 +152,18 @@ def _coerce_value(expected_type: Any, raw: Any) -> Any:
     if origin is None:
         if is_dataclass(expected_type) and isinstance(raw, dict):
             return _bind_model(expected_type, raw)
-        if expected_type in {str, int, float, bool}:
-            return expected_type(raw)
+        if expected_type is bool:
+            if isinstance(raw, bool):
+                return raw
+            if isinstance(raw, str):
+                return raw.strip().lower() in {"1", "true", "yes", "on"}
+            return bool(raw)
+        if expected_type is int:
+            return int(raw)
+        if expected_type is float:
+            return float(raw)
+        if expected_type is str:
+            return str(raw)
         return raw
 
     if origin in {list, tuple} and args and isinstance(raw, list):

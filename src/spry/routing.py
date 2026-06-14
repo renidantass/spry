@@ -67,8 +67,11 @@ class RouteDefinition:
         return match.groupdict()
 
 
-def extract_controller_routes(controller_type: type[Any]) -> list[RouteDefinition]:
-    prefix = getattr(controller_type, "__spry_prefix__", None)
+def extract_controller_routes(
+    controller_type: type[Any],
+    prefix_override: str | None = None,
+) -> list[RouteDefinition]:
+    prefix = prefix_override if prefix_override is not None else getattr(controller_type, "__spry_prefix__", None)
     if prefix is None:
         raise TypeError(f"{controller_type.__name__} is not decorated with @controller")
 
@@ -130,7 +133,6 @@ _PARAM_PATTERNS: dict[str, str] = {
     "slug": r"[a-z0-9-]+",
     "uuid": r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
     "path": r".+",
-    "str": r"[^/]+",
 }
 
 

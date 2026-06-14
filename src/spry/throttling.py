@@ -45,9 +45,6 @@ class TokenBucket:
             return time.time() + self.window
 
 
-InMemoryStore = TokenBucket
-
-
 def rate_limit_middleware_factory(
     bucket: TokenBucket,
     key_func: Any = None,

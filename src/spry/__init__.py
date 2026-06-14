@@ -10,7 +10,7 @@ except Exception:
     except Exception:
         __version__ = "0.1.0"
 
-from spry.app import AppBuilder, Application, deprecated
+from spry.app import AppBuilder, Application
 
 # Web layer — http, controllers, routing, results, middleware, views, openapi
 from spry.web import (
@@ -94,6 +94,15 @@ from spry.security import (
 # Infrastructure — DI, config, events, i18n, testing, tasks, token_signer
 from spry.config import Configuration
 from spry.di import ServiceCollection, ServiceProvider
+from spry.errors import (
+    BadRequestError,
+    ConflictError,
+    ForbiddenError,
+    NotFoundError,
+    SpryError,
+    UnauthorizedError,
+    UnprocessableEntityError,
+)
 from spry.events import EventDispatcher
 from spry.i18n import I18nService
 from spry.tasks import BackgroundTask, BackgroundWorker
@@ -106,7 +115,9 @@ __all__ = [
     "AuthenticatedController",
     "BackgroundTask",
     "BackgroundWorker",
+    "BadRequestError",
     "Configuration",
+    "ConflictError",
     "Controller",
     "ControllerBase",
     "CookieAuthService",
@@ -118,12 +129,14 @@ __all__ = [
     "DbSet",
     "Email",
     "EventDispatcher",
+    "ForbiddenError",
     "HtmlString",
     "HttpContext",
     "I18nService",
     "JwtAuthService",
     "MaxLength",
     "MinLength",
+    "NotFoundError",
     "OpenApiBuilder",
     "Page",
     "PasswordHasher",
@@ -132,15 +145,19 @@ __all__ = [
     "Request",
     "Required",
     "Response",
+    "StreamingResponse",
     "ServiceCollection",
     "ServiceProvider",
     "SessionMiddleware",
     "SessionStore",
+    "SpryError",
     "SpryTemplateEngine",
     "TemplateEngine",
     "TestClient",
     "TestResponse",
     "TokenBucket",
+    "UnauthorizedError",
+    "UnprocessableEntityError",
     "UploadedFile",
     "UserPrincipal",
     "ValidationError",
@@ -153,7 +170,6 @@ __all__ = [
     "created",
     "dbset",
     "delete",
-    "deprecated",
     "email",
     "foreign_key",
     "get",

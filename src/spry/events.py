@@ -24,16 +24,7 @@ class EventDispatcher:
         for handler in self._handlers.get(event, []):
             result = handler(**kwargs)
             if inspect.iscoroutine(result):
-                try:
-                    loop = asyncio.get_event_loop()
-                    if loop.is_running():
-                        import threading
-                        future = asyncio.run_coroutine_threadsafe(result, loop)
-                        results.append(future.result())
-                    else:
-                        results.append(asyncio.run(result))
-                except RuntimeError:
-                    results.append(asyncio.run(result))
+                results.append(asyncio.run(result))
             else:
                 results.append(result)
         return results

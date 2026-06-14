@@ -38,7 +38,14 @@ SwaggerUIBundle({
 
 
 class OpenApiBuilder:
-    def __init__(self, title: str = "Spry API", version: str = "", description: str = ""):
+    def __init__(
+        self,
+        title: str = "Spry API",
+        version: str = "",
+        description: str = "",
+        *,
+        security_schemes: dict[str, dict[str, Any]] | None = None,
+    ):
         if not version:
             from spry import __version__
             version = __version__
@@ -48,14 +55,22 @@ class OpenApiBuilder:
         self._routes: list[RouteDefinition] = []
         self._schemas: dict[str, dict[str, Any]] = {}
         self._seen_schemas: set[type] = set()
+        self._security_schemes: dict[str, dict[str, Any]] = security_schemes or {}
 
     def add_routes(self, routes: list[RouteDefinition]) -> None:
         self._routes = routes
+
+    def add_security_scheme(self, name: str, scheme: dict[str, Any]) -> None:
+        self._security_schemes[name] = scheme
 
     def build(self) -> dict[str, Any]:
         paths: dict[str, Any] = {}
         for route in self._routes:
             self._add_path(route, paths)
+
+        components: dict[str, Any] = {"schemas": self._schemas}
+        if self._security_schemes:
+            components["securitySchemes"] = self._security_schemes
 
         return {
             "openapi": "3.1.0",
@@ -65,9 +80,7 @@ class OpenApiBuilder:
                 "description": self.description,
             },
             "paths": paths,
-            "components": {
-                "schemas": self._schemas,
-            },
+            "components": components,
         }
 
     def _add_path(self, route: RouteDefinition, paths: dict[str, Any]) -> None:
@@ -85,9 +98,10 @@ class OpenApiBuilder:
         parameters = self._extract_parameters(route, handler)
         request_body = self._extract_request_body(handler)
         responses = self._extract_responses(handler)
+        security = self._extract_security(handler)
 
         method = route.method.lower()
-        paths[path_key][method] = {
+        operation: dict[str, Any] = {
             "operationId": operation_id,
             "summary": doc["summary"],
             "description": doc["description"],
@@ -95,6 +109,21 @@ class OpenApiBuilder:
             **({"requestBody": request_body} if request_body else {}),
             "responses": responses,
         }
+        if security:
+            operation["security"] = security
+        paths[path_key][method] = operation
+
+    def _extract_security(self, handler: Any) -> list[dict[str, list[str]]]:
+        target = handler
+        if hasattr(target, "__func__"):
+            target = target.__func__
+        settings = getattr(target, "__spry_authorize__", None)
+        if not settings:
+            return []
+        schemes: list[dict[str, list[str]]] = []
+        if self._security_schemes:
+            schemes.append({next(iter(self._security_schemes)): []})
+        return schemes
 
     def _resolve_handler(self, route: RouteDefinition) -> Any:
         if route.function_handler is not None:
@@ -288,10 +317,10 @@ class OpenApiBuilder:
 
 
 def make_openapi_response(app: Any) -> Response:
-    openapi = getattr(app, "_openapi_spec", None)
-    if openapi is None:
+    spec = app.openapi_spec if hasattr(app, "openapi_spec") else getattr(app, "_openapi_spec", None)
+    if spec is None:
         return Response.json({"error": "OpenAPI spec not available"}, 404)
-    return Response.json(openapi)
+    return Response.json(spec)
 
 
 def make_swagger_ui_response() -> Response:

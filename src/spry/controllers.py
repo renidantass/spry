@@ -4,9 +4,19 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from spry.auth import CookieAuthService
-from spry.http import Response
+from spry.http import Request, Response
 from spry.results import bad_request, created, no_content, not_found, ok
 from spry.views import HtmlString, ViewRenderer
+
+
+def _build_csrf_input(request: Request | None) -> HtmlString | None:
+    if request is None:
+        return None
+    token = request.items.get("csrf_token", "")
+    if not token:
+        return None
+    field_name = request.items.get("csrf_field_name", "__csrf")
+    return HtmlString(f'<input type="hidden" name="{field_name}" value="{token}" />')
 
 
 class ControllerBase:
@@ -48,8 +58,19 @@ class ControllerBase:
 
 
 class Controller(ControllerBase):
+    request: Request | None
+
     def __init__(self, view_renderer: ViewRenderer) -> None:
         self._view_renderer = view_renderer
+        self.request = None
+
+    def _ensure_csrf_input(self, full_model: dict[str, Any]) -> None:
+        if "csrf_input" in full_model:
+            return
+        request = getattr(self, "request", None)
+        csrf_input = _build_csrf_input(request)
+        if csrf_input is not None:
+            full_model["csrf_input"] = csrf_input
 
     def view(
         self,
@@ -60,21 +81,13 @@ class Controller(ControllerBase):
         status_code: int = 200,
     ) -> Response:
         full_model = dict(model or {})
-        if "csrf_input" not in full_model and hasattr(self, 'request'):
-            token = self.request.items.get("csrf_token", "")
-            field_name = self.request.items.get("csrf_field_name", "__csrf")
-            if token:
-                full_model["csrf_input"] = HtmlString(f'<input type="hidden" name="{field_name}" value="{token}" />')
+        self._ensure_csrf_input(full_model)
         markup = self._view_renderer.render(view_name, full_model, layout=layout)
         return self.html(markup, status_code=status_code)
 
     def partial_view(self, view_name: str, model: Mapping[str, Any] | None = None) -> HtmlString:
         full_model = dict(model or {})
-        if "csrf_input" not in full_model and hasattr(self, 'request'):
-            token = self.request.items.get("csrf_token", "")
-            field_name = self.request.items.get("csrf_field_name", "__csrf")
-            if token:
-                full_model["csrf_input"] = HtmlString(f'<input type="hidden" name="{field_name}" value="{token}" />')
+        self._ensure_csrf_input(full_model)
         return self._view_renderer.render_partial(view_name, full_model)
 
 
@@ -92,15 +105,13 @@ class AuthenticatedController(Controller):
         return response
 
     def csrf_input(self, request: Any) -> HtmlString:
-        token = request.items.get("csrf_token", "")
-        field_name = request.items.get("csrf_field_name", "__csrf")
-        return HtmlString(f'<input type="hidden" name="{field_name}" value="{token}" />')
+        return _build_csrf_input(request) or HtmlString("")
 
 
 def serve_static_file(static_dir: str | Path, relative_name: str, content_types: Mapping[str, str]) -> Response:
     base_dir = Path(static_dir).resolve()
     file_path = (base_dir / relative_name).resolve()
-    if file_path.parent != base_dir or not file_path.exists():
+    if not str(file_path).startswith(str(base_dir)) or not file_path.exists():
         return Response.text("Not found", 404)
 
     content_type = content_types.get(file_path.suffix)

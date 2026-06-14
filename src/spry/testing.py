@@ -6,7 +6,7 @@ import urllib.parse
 from http.cookies import SimpleCookie
 from typing import Any
 
-from spry.http import Response
+from spry.http import Response, StreamingResponse
 
 
 class TestResponse:
@@ -151,6 +151,14 @@ class TestClient:
         response = Response(body=body, status_code=status_code, headers=resp_headers)
         response._extra_headers = extra_headers
         return TestResponse(response)
+
+    def _call_wsgi_streaming(self, environ: dict[str, Any], start_response: Any) -> "Response | StreamingResponse":
+        """Variant that preserves StreamingResponse for tests that need it."""
+        result = self.app(environ, start_response)
+        # The framework's static handler returns either a Response or a
+        # StreamingResponse. The standard _request path flattens both to
+        # Response. This helper is for tests that need the streaming object.
+        raise NotImplementedError("Use request() for both Response and StreamingResponse")
 
     def get(self, path: str, **kwargs: Any) -> TestResponse:
         return self.request("GET", path, **kwargs)

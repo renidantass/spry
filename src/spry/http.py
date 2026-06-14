@@ -5,7 +5,7 @@ import re
 from dataclasses import asdict, dataclass, is_dataclass
 from http import HTTPStatus
 from http.cookies import SimpleCookie
-from typing import Any
+from typing import Any, Callable, Iterable
 from urllib.parse import parse_qs
 
 MAX_BODY: int = 10 * 1024 * 1024
@@ -160,12 +160,14 @@ class Response:
         body: bytes = b"",
         status_code: int = 200,
         headers: dict[str, str] | None = None,
+        *,
+        scheme: str = "http",
     ) -> None:
         self.body = body
         self.status_code = status_code
         self.headers = headers or {}
         self._extra_headers: list[tuple[str, str]] = []
-        self._request_scheme = "http"
+        self._request_scheme = scheme
 
     @classmethod
     def text(cls, text: str, status_code: int = 200, headers: dict[str, str] | None = None) -> "Response":
@@ -241,6 +243,85 @@ class Response:
         parts = ["public" if public else "private", f"max-age={max_age}"]
         self.headers["Cache-Control"] = ", ".join(parts)
         return self
+
+
+class StreamingResponse:
+    """Response whose body is produced lazily by an iterable of bytes.
+
+    Useful for serving large files without loading them entirely into memory.
+    Content-Length is omitted so the server can use chunked transfer encoding.
+    """
+
+    def __init__(
+        self,
+        chunks: "Iterable[bytes] | Callable[[int], Iterable[bytes]]",
+        *,
+        status_code: int = 200,
+        headers: dict[str, str] | None = None,
+        chunk_size: int = 64 * 1024,
+    ) -> None:
+        self._chunks = chunks
+        self._chunker: Callable[[int], Iterable[bytes]] | None = None
+        if callable(chunks):
+            self._chunker = chunks
+        self.status_code = status_code
+        self.headers = headers or {}
+        self._extra_headers: list[tuple[str, str]] = []
+        self._request_scheme = "http"
+        self.chunk_size = chunk_size
+
+    def header_items(self, base_headers: dict[str, str] | None = None) -> list[tuple[str, str]]:
+        headers = dict(base_headers or self.headers)
+        return list(headers.items()) + list(self._extra_headers)
+
+    def to_wsgi(self, start_response: Any) -> list[bytes]:
+        # WSGI expects an iterable of bytes. Transfer-Encoding: chunked is the
+        # server's responsibility once we omit Content-Length.
+        self.headers.setdefault("Transfer-Encoding", "chunked")
+        start_response(
+            f"{self.status_code} {HTTPStatus(self.status_code).phrase}",
+            self.header_items(),
+        )
+        return list(self._iter_chunks())
+
+    def _iter_chunks(self) -> Iterable[bytes]:
+        if self._chunker is not None:
+            yield from self._chunker(self.chunk_size)
+            return
+        for chunk in self._chunks:  # type: ignore[union-attr]
+            if chunk:
+                yield chunk
+
+    def set_cookie(self, *args: Any, **kwargs: Any) -> None:
+        from http.cookies import SimpleCookie
+        name = args[0] if args else kwargs.get("name", "")
+        value = args[1] if len(args) > 1 else kwargs.get("value", "")
+        path = kwargs.get("path", "/")
+        http_only = kwargs.get("http_only", True)
+        same_site = kwargs.get("same_site", "Lax")
+        max_age = kwargs.get("max_age")
+        secure = kwargs.get("secure")
+        cookie = SimpleCookie()
+        cookie[name] = value
+        cookie[name]["path"] = path
+        if http_only:
+            cookie[name]["httponly"] = True
+        if same_site:
+            cookie[name]["samesite"] = same_site
+        if max_age is not None:
+            cookie[name]["max-age"] = str(max_age)
+        if secure is True or (secure is None and self._request_scheme == "https"):
+            cookie[name]["secure"] = True
+        self._extra_headers.append(("Set-Cookie", cookie.output(header="").strip()))
+
+    def delete_cookie(self, name: str, *, path: str = "/") -> None:
+        from http.cookies import SimpleCookie
+        cookie = SimpleCookie()
+        cookie[name] = ""
+        cookie[name]["path"] = path
+        cookie[name]["max-age"] = "0"
+        cookie[name]["expires"] = "Thu, 01 Jan 1970 00:00:00 GMT"
+        self._extra_headers.append(("Set-Cookie", cookie.output(header="").strip()))
 
 
 @dataclass(slots=True)

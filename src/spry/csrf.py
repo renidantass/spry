@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hmac
 import secrets
 
 from spry.http import Request, Response
@@ -35,7 +36,7 @@ class CsrfService:
         form_token = request.form().get(self.field_name)
         header_token = self._get_header(request, "X-CSRF-Token") or self._get_header(request, "X-XSRF-Token")
         token = form_token or header_token
-        return bool(token and cookie_token == token)
+        return bool(token) and hmac.compare_digest(cookie_token, token)
 
 
 def csrf_error_response(request: Request) -> Response:
