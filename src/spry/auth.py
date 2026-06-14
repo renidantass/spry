@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import base64
 import hashlib
 import hmac
 import json
@@ -11,6 +10,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Iterable
 
 from spry.http import Request, Response
+from spry.token_signer import TokenSigner
 
 logger = logging.getLogger("spry.auth")
 
@@ -118,25 +118,21 @@ class CookieAuthService:
     def __init__(self, secret_key: str, *, cookie_name: str = "spry_auth") -> None:
         if not secret_key or secret_key == "spry-dev-secret":
             _warn_dev_secret()
-        self.secret_key = (secret_key or "spry-dev-secret").encode("utf-8")
+        self._signer = TokenSigner(secret_key or "spry-dev-secret")
         self.cookie_name = cookie_name
 
     def issue(self, user_id: str, name: str, claims: dict[str, Any] | None = None) -> str:
-        payload = {
+        return self._signer.sign_b64({
             "sub": user_id,
             "name": name,
             "claims": claims or {},
-        }
-        payload_json = json.dumps(payload, separators=(",", ":")).encode("utf-8")
-        payload_token = base64.urlsafe_b64encode(payload_json).decode("utf-8").rstrip("=")
-        signature = hmac.new(self.secret_key, payload_token.encode("utf-8"), hashlib.sha256).hexdigest()
-        return f"{payload_token}.{signature}"
+        })
 
     def authenticate(self, request: Request) -> UserPrincipal | None:
         token = request.cookies.get(self.cookie_name)
         if not token:
             return None
-        payload = self._read_payload(token)
+        payload = self._signer.unsign_b64(token)
         if payload is None:
             return None
         return UserPrincipal(
@@ -151,80 +147,39 @@ class CookieAuthService:
     def sign_out(self, response: Response) -> None:
         response.delete_cookie(self.cookie_name, path="/")
 
-    def _read_payload(self, token: str) -> dict[str, Any] | None:
-        try:
-            payload_token, signature = token.rsplit(".", 1)
-        except ValueError:
-            return None
-
-        expected_signature = hmac.new(self.secret_key, payload_token.encode("utf-8"), hashlib.sha256).hexdigest()
-        if not hmac.compare_digest(signature, expected_signature):
-            return None
-
-        padding = "=" * (-len(payload_token) % 4)
-        try:
-            payload_json = base64.urlsafe_b64decode(payload_token + padding)
-            return json.loads(payload_json.decode("utf-8"))
-        except (ValueError, json.JSONDecodeError):
-            return None
-
 
 class JwtAuthService:
     def __init__(self, secret_key: str, algorithm: str = "HS256", ttl: int = 3600) -> None:
-        self.secret_key = secret_key.encode("utf-8")
+        self._signer = TokenSigner(secret_key)
         self.algorithm = algorithm
         self.ttl = ttl
 
     def issue(self, user_id: str, name: str, claims: dict[str, Any] | None = None) -> str:
-        header = base64.urlsafe_b64encode(json.dumps({"alg": "HS256", "typ": "JWT"}, separators=(",", ":")).encode()).rstrip(b"=").decode()
-        payload_data = {
+        payload = {
             "sub": user_id,
             "name": name,
             "iat": int(time.time()),
             "exp": int(time.time()) + self.ttl,
             "claims": claims or {},
         }
-        payload = base64.urlsafe_b64encode(json.dumps(payload_data, separators=(",", ":")).encode()).rstrip(b"=").decode()
-        signature_input = f"{header}.{payload}".encode()
-        signature = base64.urlsafe_b64encode(hmac.new(self.secret_key, signature_input, hashlib.sha256).digest()).rstrip(b"=").decode()
-        return f"{header}.{payload}.{signature}"
+        return self._signer.sign_jwt(payload)
 
     def authenticate(self, request: Request) -> UserPrincipal | None:
         auth_header = request.headers.get("Authorization", "")
         if not auth_header.startswith("Bearer "):
             return None
         token = auth_header[7:]
-        payload = self._read_payload(token)
+        payload = self._signer.unsign_jwt(token)
         if payload is None:
+            return None
+        exp = payload.get("exp", 0)
+        if time.time() > exp:
             return None
         return UserPrincipal(
             user_id=str(payload.get("sub", "")),
             name=str(payload.get("name", "")),
             claims=dict(payload.get("claims", {})),
         )
-
-    def _read_payload(self, token: str) -> dict[str, Any] | None:
-        try:
-            parts = token.split(".")
-            if len(parts) != 3:
-                return None
-            header_str, payload_str, _ = parts
-
-            expected_sig = base64.urlsafe_b64encode(
-                hmac.new(self.secret_key, f"{header_str}.{payload_str}".encode(), hashlib.sha256).digest()
-            ).rstrip(b"=").decode()
-            if not hmac.compare_digest(parts[2], expected_sig):
-                return None
-
-            padding = "=" * (-len(payload_str) % 4)
-            payload_data = json.loads(base64.urlsafe_b64decode(payload_str + padding).decode("utf-8"))
-
-            exp = payload_data.get("exp", 0)
-            if time.time() > exp:
-                return None
-            return payload_data
-        except (ValueError, json.JSONDecodeError, Exception):
-            return None
 
     def sign_in(self, response: Response, user_id: str, name: str, claims: dict[str, Any] | None = None) -> str:
         token = self.issue(user_id, name, claims)

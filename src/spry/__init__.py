@@ -81,13 +81,14 @@ from spry.security import (
     authorize,
 )
 
-# Infrastructure — DI, config, events, i18n, testing, tasks
+# Infrastructure — DI, config, events, i18n, testing, tasks, token_signer
 from spry.config import Configuration
 from spry.di import ServiceCollection, ServiceProvider
 from spry.events import EventDispatcher
 from spry.i18n import I18nService
 from spry.tasks import BackgroundTask, BackgroundWorker
 from spry.testing import TestClient, TestResponse
+from spry.token_signer import TokenSigner
 
 __all__ = [
     "AppBuilder",

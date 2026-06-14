@@ -41,6 +41,7 @@ class AutoDiscoveryTests(unittest.TestCase):
 
                     def create_app():
                         builder = AppBuilder()
+                        builder.discover_controllers("autosite")
                         return builder.build()
                     '''
                 ),

@@ -77,11 +77,6 @@ def main() -> None:
 
     doctor_parser = subparsers.add_parser("doctor", help="Check project setup and dependencies")
 
-    db_parser = subparsers.add_parser("db", help="Database operations")
-    db_subparsers = db_parser.add_subparsers(dest="db_command", required=True)
-    db_shell = db_subparsers.add_parser("shell", help="Open a database shell")
-    db_shell.add_argument("--database", default="app.db", help="Database path or connection string")
-
     args = parser.parse_args()
 
     if args.command is None:
@@ -173,9 +168,6 @@ def main() -> None:
             else:
                 handler_name = "?"
             print(f"{route.method:<8} {route.path:<40} {handler_name}")
-
-    if args.command == "db" and args.db_command == "shell":
-        _open_db_shell(args.database)
 
 
 def _prepare_import_paths(import_path: str | None = None) -> None:
@@ -370,58 +362,6 @@ def _run_doctor() -> None:
     else:
         logger.info("All checks passed")
 
-
-def _open_db_shell(database: str) -> None:
-    import shutil
-
-    if database.endswith(".db") or database.startswith("sqlite"):
-        db_path = database.replace("sqlite:///", "").replace("sqlite://", "")
-        if shutil.which("sqlite3"):
-            subprocess.run(["sqlite3", db_path])
-        else:
-            import sqlite3
-            conn = sqlite3.connect(db_path)
-            conn.row_factory = sqlite3.Row
-            logger.info("SQLite shell (type .exit to quit, .tables for list)")
-            while True:
-                try:
-                    line = input("sqlite> ").strip()
-                except (EOFError, KeyboardInterrupt):
-                    break
-                if not line:
-                    continue
-                if line == ".exit":
-                    break
-                if line == ".tables":
-                    tables = conn.execute(
-                        "SELECT name FROM sqlite_master WHERE type='table'"
-                    ).fetchall()
-                    for t in tables:
-                        print(t["name"])
-                    continue
-                try:
-                    cursor = conn.execute(line)
-                    if line.upper().startswith("SELECT") or line.upper().startswith("PRAGMA"):
-                        rows = cursor.fetchall()
-                        if rows:
-                            keys = rows[0].keys()
-                            print(" | ".join(keys))
-                            print("-" * (len(keys) * 20))
-                            for row in rows:
-                                print(" | ".join(str(row[k]) for k in keys))
-                        print(f"({len(rows)} rows)")
-                    else:
-                        conn.commit()
-                        print(f"({cursor.rowcount} rows affected)")
-                except Exception as e:
-                    print(f"Error: {e}")
-            conn.close()
-    elif database.startswith("postgresql"):
-        subprocess.run(["psql", database])
-    elif database.startswith("mysql"):
-        subprocess.run(["mysql", database])
-    else:
-        logger.error("Unsupported database: %s", database)
 
 
 if __name__ == "__main__":

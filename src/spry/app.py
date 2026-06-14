@@ -743,13 +743,6 @@ def deprecated(message: str = "") -> Any:
 
 
 def _infer_default_controller_target() -> str | None:
-    for frame_info in inspect.stack()[2:]:
-        module_name = frame_info.frame.f_globals.get("__name__")
-        if not module_name or module_name.startswith("spry."):
-            continue
-        if module_name in {"__main__", "builtins"}:
-            continue
-        return module_name.partition(".")[0] or module_name
     return None
 
 

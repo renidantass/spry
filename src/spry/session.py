@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import hashlib
-import hmac
 import logging
 import secrets
 import time
 from typing import Any
 
 from spry.http import Request, Response
+from spry.token_signer import TokenSigner
 
 logger = logging.getLogger("spry.session")
 
@@ -52,21 +51,13 @@ class SessionStore:
 class SignedSessionStore(SessionStore):
     def __init__(self, secret_key: str, ttl: int = 3600, idle_timeout: int | None = None) -> None:
         super().__init__(ttl=ttl, idle_timeout=idle_timeout)
-        self._secret = secret_key.encode("utf-8")
+        self._signer = TokenSigner(secret_key)
 
     def _sign(self, sid: str) -> str:
-        sig = hmac.new(self._secret, sid.encode("utf-8"), hashlib.sha256).hexdigest()[:16]
-        return f"{sid}.{sig}"
+        return self._signer.sign(sid)
 
     def _verify(self, token: str) -> str | None:
-        try:
-            sid, sig = token.rsplit(".", 1)
-            expected = hmac.new(self._secret, sid.encode("utf-8"), hashlib.sha256).hexdigest()[:16]
-            if hmac.compare_digest(sig, expected):
-                return sid
-        except (ValueError, AttributeError):
-            pass
-        return None
+        return self._signer.unsign(token)
 
 
 class SessionMiddleware:
