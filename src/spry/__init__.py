@@ -1,95 +1,168 @@
 __version__ = "0.1.0"
-__all__: list[str] = []
 
 from spry.app import AppBuilder, Application, deprecated
-from spry.auth import CookieAuthService, JwtAuthService, PasswordHasher, UserPrincipal, authorize
-from spry.controllers import AuthenticatedController, Controller, ControllerBase, serve_static_file
-from spry.cors import CorsConfig
-from spry.csrf import CsrfService
-from spry.db import DatabaseBackend, get_backend, parse_database_url
+
+# Web layer — http, controllers, routing, results, middleware, views, openapi
+from spry.web import (
+    ActionResult,
+    AuthenticatedController,
+    Controller,
+    ControllerBase,
+    HtmlString,
+    HttpContext,
+    OpenApiBuilder,
+    Request,
+    Response,
+    SpryTemplateEngine,
+    TemplateEngine,
+    UploadedFile,
+    ViewRenderer,
+    bad_request,
+    controller,
+    created,
+    delete,
+    get,
+    no_content,
+    not_found,
+    ok,
+    patch,
+    post,
+    put,
+    serve_static_file,
+)
+
+# Data / ORM — DbContext, DbSet, database backends
+from spry.data import (
+    DatabaseBackend,
+    DatabaseMigrator,
+    DbContext,
+    DbSet,
+    Page,
+    column,
+    dbset,
+    foreign_key,
+    get_backend,
+    key,
+    navigation,
+    navigation_many,
+    parse_database_url,
+)
+
+# Data Annotations — validation, validators
+from spry.data_annotations import (
+    Email,
+    MaxLength,
+    MinLength,
+    Range,
+    Regex,
+    Required,
+    ValidationError,
+    email,
+    max_length,
+    min_length,
+    range_validator,
+    regex,
+    required,
+    validate,
+    validate_model,
+)
+
+# Security — auth, cors, csrf, sessions, throttling
+from spry.security import (
+    CookieAuthService,
+    CorsConfig,
+    CsrfService,
+    JwtAuthService,
+    PasswordHasher,
+    SessionMiddleware,
+    SessionStore,
+    TokenBucket,
+    UserPrincipal,
+    authorize,
+)
+
+# Infrastructure — DI, config, events, i18n, testing, tasks
+from spry.config import Configuration
+from spry.di import ServiceCollection, ServiceProvider
 from spry.events import EventDispatcher
 from spry.i18n import I18nService
-from spry.http import Request, Response, UploadedFile
-from spry.middleware import HttpContext
-from spry.openapi import OpenApiBuilder
-from spry.orm import DatabaseMigrator, DbContext, DbSet, column, dbset, foreign_key, key, navigation, navigation_many
-from spry.results import bad_request, created, no_content, not_found, ok
-from spry.routing import controller, delete, get, patch, post, put
-from spry.session import SessionMiddleware, SessionStore
-from spry.throttling import TokenBucket
-from spry.validation import ValidationError, validate
+from spry.tasks import BackgroundTask, BackgroundWorker
 from spry.testing import TestClient, TestResponse
-from spry.validators import Email, MaxLength, MinLength, Range, Regex, Required, email, max_length, min_length, range_validator, regex, required, validate_model
-from spry.views import HtmlString, SpryTemplateEngine, TemplateEngine, ViewRenderer
 
 __all__ = [
     "AppBuilder",
     "Application",
     "AuthenticatedController",
-    "CookieAuthService",
+    "BackgroundTask",
+    "BackgroundWorker",
+    "Configuration",
     "Controller",
     "ControllerBase",
+    "CookieAuthService",
+    "CorsConfig",
     "CsrfService",
     "DatabaseBackend",
     "DatabaseMigrator",
     "DbContext",
     "DbSet",
+    "Email",
+    "EventDispatcher",
     "HtmlString",
     "HttpContext",
+    "I18nService",
+    "JwtAuthService",
+    "MaxLength",
+    "MinLength",
+    "OpenApiBuilder",
+    "Page",
+    "PasswordHasher",
+    "Range",
+    "Regex",
     "Request",
+    "Required",
     "Response",
+    "ServiceCollection",
+    "ServiceProvider",
+    "SessionMiddleware",
+    "SessionStore",
+    "SpryTemplateEngine",
+    "TemplateEngine",
+    "TestClient",
+    "TestResponse",
+    "TokenBucket",
+    "UploadedFile",
     "UserPrincipal",
     "ValidationError",
     "ViewRenderer",
-    "PasswordHasher",
+    "ActionResult",
     "authorize",
     "bad_request",
     "column",
     "controller",
-    "CorsConfig",
     "created",
     "dbset",
     "delete",
+    "deprecated",
+    "email",
     "foreign_key",
-    "get_backend",
     "get",
+    "get_backend",
     "key",
+    "max_length",
+    "min_length",
     "navigation",
     "navigation_many",
     "no_content",
     "not_found",
     "ok",
-    "OpenApiBuilder",
     "parse_database_url",
     "patch",
     "post",
     "put",
-    "serve_static_file",
-    "SpryTemplateEngine",
-    "TemplateEngine",
-    "TestClient",
-    "TestResponse",
-    "UploadedFile",
-    "Email",
-    "MaxLength",
-    "MinLength",
-    "Range",
-    "Regex",
-    "Required",
-    "email",
-    "max_length",
-    "min_length",
     "range_validator",
     "regex",
     "required",
+    "serve_static_file",
     "validate",
     "validate_model",
-    "SessionMiddleware",
-    "SessionStore",
-    "TokenBucket",
-    "BackgroundTask",
-    "BackgroundWorker",
-    "EventDispatcher",
-    "I18nService",
-    "JwtAuthService",
 ]

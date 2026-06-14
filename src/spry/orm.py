@@ -7,7 +7,7 @@ from dataclasses import MISSING, asdict, dataclass, field, fields, is_dataclass
 from datetime import date, datetime
 from enum import Enum
 from pathlib import Path
-from typing import Any, Callable, Generic, TypeVar, get_args, get_origin, get_type_hints
+from typing import Any, Callable, Generic, TypeVar, overload, get_args, get_origin, get_type_hints
 
 logger = logging.getLogger("spry.orm")
 
@@ -127,6 +127,10 @@ class DbSetDefinition(Generic[TEntity]):
     def __set_name__(self, owner: type[Any], name: str) -> None:
         self.name = name
 
+    @overload
+    def __get__(self, instance: None, owner: type[Any]) -> "DbSetDefinition[TEntity]": ...
+    @overload
+    def __get__(self, instance: object, owner: type[Any]) -> "DbSet[TEntity]": ...
     def __get__(self, instance: Any, owner: type[Any]) -> "DbSet[TEntity] | DbSetDefinition[TEntity]":
         if instance is None:
             return self

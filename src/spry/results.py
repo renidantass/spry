@@ -1,8 +1,11 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, TypeAlias
 
 from spry.http import Response
+
+
+ActionResult: TypeAlias = "Response | dict | list | None | bytes | str"
 
 
 def ok(value: Any | None = None) -> Response:

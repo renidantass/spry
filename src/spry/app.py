@@ -25,6 +25,7 @@ from spry.di import ServiceCollection, ServiceProvider, ServiceScope
 from spry.http import MAX_BODY, ProblemDetail, Request, Response
 from spry.middleware import HttpContext, Middleware
 from spry.openapi import OpenApiBuilder, make_openapi_response, make_swagger_ui_response
+from spry.results import ActionResult
 from spry.routing import RouteDefinition, create_function_route, extract_controller_routes
 from spry.validation import ValidationError, bind_payload, bind_value
 from spry.views import ViewRenderer
@@ -264,6 +265,7 @@ class AppBuilder:
         self._debug: bool | None = None
         self._max_body_size: int | None = None
         self._error_handlers: dict[int, Any] = {}
+        self._server_header_added = False
 
     def enable_openapi(self, title: str = "Spry API", version: str = "0.1.0", description: str = "") -> None:
         self._openapi_enabled = True
@@ -310,6 +312,16 @@ class AppBuilder:
             ViewRenderer,
             factory=lambda _: ViewRenderer(resolved_root, views_dir=views_dir, default_layout=layout, engine=engine, i18n_service=i18n),
         )
+
+    def add_server_header(self, header: str = "X-Powered-By", value: str = "Spry") -> None:
+        if self._server_header_added:
+            return
+        self._server_header_added = True
+        def server_header_middleware(context: Any, next_handler: Any) -> Response:
+            response = next_handler()
+            response.headers.setdefault(header, value)
+            return response
+        self.use(server_header_middleware)
 
     def add_cors(self, *, origins: list[str] | None = None, methods: list[str] | None = None, headers: list[str] | None = None, credentials: bool = False, max_age: int = 3600) -> None:
         config = CorsConfig(
@@ -555,6 +567,8 @@ class AppBuilder:
         return RouteGroupBuilder(self, prefix, middlewares or [])
 
     def build(self) -> Application:
+        if not self._server_header_added:
+            self.add_server_header()
         self._auto_discover_controllers()
         final_routes = list(self._routes)
 
@@ -563,17 +577,19 @@ class AppBuilder:
         max_body = self._max_body_size or MAX_BODY
         Request.set_max_body_size(max_body)
 
-        if self._openapi_enabled and final_routes:
+        openapi_spec = None
+        if self._openapi_enabled:
             openapi = OpenApiBuilder(
                 title=self._openapi_title,
                 version=self._openapi_version,
                 description=self._openapi_description,
             )
-            openapi.add_routes(final_routes)
-            spec = openapi.build()
+            if final_routes:
+                openapi.add_routes(final_routes)
+            openapi_spec = openapi.build()
 
             def openapi_json_handler():
-                return Response.json(spec)
+                return Response.json(openapi_spec)
 
             def swagger_ui_handler():
                 return make_swagger_ui_response()
@@ -594,8 +610,8 @@ class AppBuilder:
 
         provider = self.services.build_provider()
         app = Application(self.configuration, provider, final_routes, self._middlewares, debug=debug, error_handlers=self._error_handlers)
-        if self._openapi_enabled:
-            app._openapi_spec = spec if self._openapi_enabled and final_routes else None
+        if openapi_spec is not None:
+            app._openapi_spec = openapi_spec
         return app
 
     def _register_controllers_from_module(self, module: ModuleType) -> None:
@@ -694,7 +710,7 @@ def _invoke_callable(handler: Any, scope: ServiceScope, request: Request, route_
     return result
 
 
-def _coerce_response(result: Any) -> Response:
+def _coerce_response(result: ActionResult) -> Response:
     if isinstance(result, Response):
         return result
     if result is None:
