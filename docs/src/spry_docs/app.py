@@ -19,8 +19,26 @@ DOCS_DIR = Path(__file__).resolve().parents[2]
 ASSETS_DIR = DOCS_DIR / "src" / "spry_docs" / "assets"
 CONTENT_DIR = DOCS_DIR / "src" / "spry_docs" / "content"
 API_DIR = DOCS_DIR / "src" / "spry_docs" / "api"
-VERSION = "0.1.0"
-VERSIONS = ["0.1.0"]
+VERSION: str | None = None
+VERSIONS: list[str] = []
+
+
+def _get_version() -> str:
+    global VERSION, VERSIONS
+    if VERSION is not None:
+        return VERSION
+    try:
+        import tomllib
+        pyproject = tomllib.load(open(DOCS_DIR.parent / "pyproject.toml", "rb"))
+        VERSION = pyproject["project"]["version"]
+        VERSIONS = [VERSION]
+    except Exception:
+        VERSION = "0.1.0"
+        VERSIONS = ["0.1.0"]
+    return VERSION
+
+
+_get_version()
 
 _locale_cache: dict[str, list[dict[str, Any]]] = {}
 
@@ -159,7 +177,7 @@ def create_app() -> Any:
             '<div class="hero-actions">'
             '<a href="/docs/getting-started" class="btn btn-primary">Começar</a>'
             '<a href="/playground" class="btn btn-secondary">Playground</a>'
-            '<a href="https://github.com/anomalyco/spry" class="btn btn-secondary">GitHub</a>'
+            '<a href="https://github.com/renidantass/spry" class="btn btn-secondary">GitHub</a>'
             "</div>"
             '<div class="term">'
             '<div class="term-hd"><span class="term-dot"></span><span class="term-dot"></span><span class="term-dot"></span></div>'

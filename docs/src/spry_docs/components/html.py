@@ -363,7 +363,7 @@ class Layout:
 
 <footer class="ftr">
   <p>Spry {self.version} — MIT License</p>
-  <p><a href="https://github.com/anomalyco/spry">GitHub</a></p>
+  <p><a href="https://github.com/renidantass/spry">GitHub</a></p>
 </footer>
 
 <script>

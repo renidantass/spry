@@ -28,9 +28,9 @@ dependencies = []
 
 [project.urls]
 Homepage = "https://spry.dev"
-Repository = "https://github.com/anomalyco/spry"
+Repository = "https://github.com/renidantass/spry"
 Documentation = "https://spry.dev/docs"
-Changelog = "https://github.com/anomalyco/spry/blob/main/CHANGELOG.md"
+Changelog = "https://github.com/renidantass/spry/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 postgres = ["psycopg2-binary"]
