@@ -86,7 +86,10 @@ class Request:
             if not self.body:
                 self._json_cache = {}
             else:
-                self._json_cache = json.loads(self.body.decode("utf-8"))
+                try:
+                    self._json_cache = json.loads(self.body.decode("utf-8"))
+                except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+                    raise ValueError(f"Invalid JSON body: {exc}") from exc
         return self._json_cache
 
     def text(self) -> str:
@@ -269,7 +272,7 @@ def _json_default(value: Any) -> Any:
     raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable")
 
 
-def _parse_multipart(body: bytes, content_type: str) -> tuple[dict[str, str], dict[str, UploadedFile]]:
+def _parse_multipart(body: bytes, content_type: str, max_parts: int = 100) -> tuple[dict[str, str], dict[str, UploadedFile]]:
     boundary_match = re.search(r"boundary=([^;]+)", content_type)
     if not boundary_match:
         return {}, {}
@@ -279,6 +282,8 @@ def _parse_multipart(body: bytes, content_type: str) -> tuple[dict[str, str], di
 
     delimiter = f"--{boundary}".encode()
     parts = body.split(delimiter)
+    if len(parts) > max_parts:
+        raise ValueError(f"Multipart body exceeds maximum of {max_parts} parts")
     fields: dict[str, str] = {}
     files: dict[str, UploadedFile] = {}
 

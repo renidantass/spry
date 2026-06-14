@@ -39,6 +39,9 @@ def cors_middleware_factory(config: CorsConfig) -> Any:
             response.headers["Access-Control-Allow-Origin"] = "*"
         elif origin in config.origins:
             response.headers["Access-Control-Allow-Origin"] = origin
+            vary = set(response.headers.get("Vary", "").split(", ") if response.headers.get("Vary") else [])
+            vary.add("Origin")
+            response.headers["Vary"] = ", ".join(sorted(vary))
         else:
             return response
 
