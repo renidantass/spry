@@ -125,7 +125,7 @@ def _build_search_index(locale: str, base_url: str = "") -> list[dict[str, Any]]
         tags_match = re.search(r"tags:\s*(.*)", content)
         tags = [t.strip() for t in tags_match.group(1).split(",")] if tags_match else []
         index.append({
-            "slug": f"{base_url}/docs/{slug}",
+            "slug": f"{base_url}/{locale}/docs/{slug}",
             "title": title,
             "snippet": plain[:300],
             "tags": tags,
@@ -175,7 +175,7 @@ def create_app() -> Any:
             '<p>Framework Python opinado para APIs e web apps. '
             "Zero boilerplate, controle total, pronto para produção.</p>"
             '<div class="hero-actions">'
-            f'<a href="{base_url}/docs/getting-started" class="btn btn-primary">Começar</a>'
+            f'<a href="{base_url}/{locale}/docs/getting-started" class="btn btn-primary">Começar</a>'
             f'<a href="{base_url}/playground" class="btn btn-secondary">Playground</a>'
             '<a href="https://github.com/renidantass/spry" class="btn btn-secondary">GitHub</a>'
             "</div>"
@@ -192,7 +192,7 @@ def create_app() -> Any:
             f'{feat_grid}'
             '<div class="path-grid">'
             + "".join(
-                f'<a href="{base_url}/docs/{p["slug"]}" class="card">'
+                f'<a href="{base_url}/{locale}/docs/{p["slug"]}" class="card">'
                 f'<div class="card-tl">{p["title"]}</div>'
                 f'<div class="card-desc">{p.get("description", "")}</div>'
                 f"</a>"
@@ -222,7 +222,7 @@ def create_app() -> Any:
             body = (
                 f'<h1>Página não encontrada</h1>'
                 f'<p>A documentação para <code>{slug}</code> não foi encontrada.</p>'
-                f'<a href="{base_url}/docs/getting-started" class="btn btn-primary">Ver documentação</a>'
+                f'<a href="{base_url}/{locale}/docs/getting-started" class="btn btn-primary">Ver documentação</a>'
             )
             html = Layout(base_url=base_url,
                 title="404",
@@ -278,8 +278,7 @@ def create_app() -> Any:
         ).render()
         return Response.html(html)
 
-    def search_index(request: Request) -> Response:
-        locale = request.query.get("locale", "")
+    def search_index(request: Request, locale: str = "") -> Response:
         if locale not in ("pt", "en"):
             locale = _detect_locale(request)
         index = _build_search_index(locale, base_url)
@@ -429,7 +428,7 @@ def create_app() -> Any:
             body = (
                 f'<h1>Página não encontrada</h1>'
                 f'<p>A documentação para <code>{slug}</code> não foi encontrada.</p>'
-                f'<a href="{base_url}/docs/getting-started" class="btn btn-primary">Ver documentação</a>'
+                f'<a href="{base_url}/{locale}/docs/getting-started" class="btn btn-primary">Ver documentação</a>'
             )
             html = Layout(base_url=base_url,
                 title="404",
@@ -485,6 +484,7 @@ def create_app() -> Any:
     builder.map_get(f"{base_url}/docs/{{locale}}/{{slug}}", docs_page_locale)
     builder.map_get(f"{base_url}/{{locale}}/docs/{{slug}}", docs_page_locale)
     builder.map_get(f"{base_url}/search-index.json", search_index)
+    builder.map_get(f"{base_url}/{{locale}}/search-index.json", search_index)
     builder.map_get(f"{base_url}/api", lambda request: api_page("", request))
     builder.map_get(f"{base_url}/api/", lambda request: api_page("", request))
     builder.map_get(f"{base_url}/api/{{path:path}}", api_page)

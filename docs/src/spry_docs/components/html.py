@@ -173,14 +173,15 @@ class SearchBar:
 
 
 class Sidebar:
-    def __init__(self, pages: list[dict[str, Any]], active_slug: str = "", base_url: str = "") -> None:
+    def __init__(self, pages: list[dict[str, Any]], active_slug: str = "", base_url: str = "", locale: str = "") -> None:
         self.pages = pages
         self.active_slug = active_slug
         self.base_url = base_url
+        self.locale = locale
 
     def render(self) -> str:
         items = "".join(
-            f'<a href="{self.base_url}/docs/{p["slug"]}" class="sb-item{" is-active" if p["slug"] == self.active_slug else ""}">'
+            f'<a href="{self.base_url}/{self.locale}/docs/{p["slug"]}" class="sb-item{" is-active" if p["slug"] == self.active_slug else ""}">'
             f'{escape(p.get("title", p["slug"]))}</a>'
             for p in self.pages
         )
@@ -308,7 +309,7 @@ class Layout:
         self.base_url = base_url
 
     def render(self) -> str:
-        sidebar = Sidebar(self.pages, self.active_slug, self.base_url).render()
+        sidebar = Sidebar(self.pages, self.active_slug, self.base_url, self.locale).render()
         search = SearchBar().render()
         vs = VersionSelector(self.versions, self.version).render()
         alt_locale = "en" if self.locale == "pt" else "pt"
@@ -329,13 +330,14 @@ class Layout:
 <meta name="twitter:card" content="summary"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="icon" type="image/svg+xml" href="{self.base_url}/assets/favicon.svg"/>
 <link rel="stylesheet" href="{self.base_url}/assets/site.css"/>
 </head>
 <body>
 <div class="topbar">
   <a href="{self.base_url}/" class="tb-brand">spry</a>
   <div class="tb-nav">
-    <a href="{self.base_url}/docs/getting-started" class="tb-link">Docs</a>
+    <a href="{self.base_url}/{self.locale}/docs/getting-started" class="tb-link">Docs</a>
     <a href="{self.base_url}/api/app" class="tb-link">API</a>
     <a href="{self.base_url}/playground" class="tb-link">Playground</a>
   </div>
@@ -349,7 +351,7 @@ class Layout:
 <div class="mobile-nav" id="mobileNav" onclick="closeMobileMenu(event)">
   <div class="mn-inner">
     <a href="{self.base_url}/" class="mn-link">Home</a>
-    <a href="{self.base_url}/docs/getting-started" class="mn-link">Docs</a>
+    <a href="{self.base_url}/{self.locale}/docs/getting-started" class="mn-link">Docs</a>
     <a href="{self.base_url}/api/app" class="mn-link">API</a>
     <a href="{self.base_url}/playground" class="mn-link">Playground</a>
     {search}
@@ -372,7 +374,7 @@ class Layout:
 </footer>
 
 <script>
-const SEARCH_INDEX_URL = '{self.base_url}/search-index.json';
+const SEARCH_INDEX_URL = '{self.base_url}/{self.locale}/search-index.json';
 let searchIndex = null;
 
 async function loadSearchIndex() {{
@@ -564,8 +566,16 @@ async function runPlayground(btn) {{
       headers: {{ 'Content-Type': 'application/json' }},
       body: JSON.stringify({{ code: code }})
     }});
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) {{
+      const text = await res.text();
+      throw new Error('Server returned ' + (res.status || 'error') + ' — the API runner may not be available on this server.');
+    }}
     const data = await res.json();
-    if (data.error) {{
+    if (!res.ok) {{
+      output.textContent = data.error || 'HTTP ' + res.status;
+      output.classList.add('is-error');
+    }} else if (data.error) {{
       output.textContent = data.error;
       output.classList.add('is-error');
     }} else {{

@@ -85,7 +85,7 @@ def build() -> None:
     for loc in LOCALES:
         _write_page(
             client,
-            f"{BASE_URL}/search-index.json?locale={loc}",
+            f"{BASE_URL}/{loc}/search-index.json",
             OUTPUT_DIR / loc / "search-index.json",
         )
 
