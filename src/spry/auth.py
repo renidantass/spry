@@ -78,6 +78,15 @@ class LoginTracker:
         self._attempts: dict[str, list[float]] = {}
         self._lock = threading.Lock()
 
+    def _prune(self, identifier: str, cutoff: float) -> None:
+        if identifier not in self._attempts:
+            return
+        remaining = [t for t in self._attempts[identifier] if t > cutoff]
+        if remaining:
+            self._attempts[identifier] = remaining
+        else:
+            del self._attempts[identifier]
+
     def record_failure(self, identifier: str) -> int:
         now = time.time()
         cutoff = now - self.lockout_seconds
@@ -95,24 +104,27 @@ class LoginTracker:
         now = time.time()
         cutoff = now - self.lockout_seconds
         with self._lock:
-            attempts = [t for t in self._attempts.get(identifier, []) if t > cutoff]
-            return len(attempts) >= self.max_attempts
+            self._prune(identifier, cutoff)
+            attempts = len(self._attempts.get(identifier, []))
+            return attempts >= self.max_attempts
 
     def remaining_attempts(self, identifier: str) -> int:
         now = time.time()
         cutoff = now - self.lockout_seconds
         with self._lock:
-            attempts = len([t for t in self._attempts.get(identifier, []) if t > cutoff])
+            self._prune(identifier, cutoff)
+            attempts = len(self._attempts.get(identifier, []))
         return max(0, self.max_attempts - attempts)
 
     def lockout_remaining_seconds(self, identifier: str) -> int:
         now = time.time()
         cutoff = now - self.lockout_seconds
         with self._lock:
-            attempts = [t for t in self._attempts.get(identifier, []) if t > cutoff]
-            if len(attempts) < self.max_attempts:
+            self._prune(identifier, cutoff)
+            entries = self._attempts.get(identifier, [])
+            if len(entries) < self.max_attempts:
                 return 0
-            earliest = attempts[0]
+            earliest = entries[0]
         remaining = int(self.lockout_seconds - (now - earliest))
         return max(0, remaining)
 
@@ -122,16 +134,18 @@ class LoginTracker:
 
 
 class CookieAuthService:
-    def __init__(self, secret_key: str, *, cookie_name: str = "spry_auth") -> None:
+    def __init__(self, secret_key: str, *, cookie_name: str = "spry_auth", max_age: int = 86400) -> None:
         if not secret_key or secret_key == "spry-dev-secret":
             _warn_dev_secret()
         self._signer = TokenSigner(secret_key or "spry-dev-secret")
         self.cookie_name = cookie_name
+        self._max_age = max_age
 
     def issue(self, user_id: str, name: str, claims: dict[str, Any] | None = None) -> str:
         return self._signer.sign_b64({
             "sub": user_id,
             "name": name,
+            "iat": int(time.time()),
             "claims": claims or {},
         })
 
@@ -139,7 +153,7 @@ class CookieAuthService:
         token = request.cookies.get(self.cookie_name)
         if not token:
             return None
-        payload = self._signer.unsign_b64(token)
+        payload = self._signer.unsign_b64(token, max_age=self._max_age)
         if payload is None:
             return None
         return UserPrincipal(

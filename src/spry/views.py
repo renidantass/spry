@@ -486,6 +486,8 @@ class SpryTemplateEngine(TemplateEngine):
         return self.render_template(template_name, context)
 
     def _load_template(self, template_name: str) -> str:
+        if "\0" in template_name:
+            raise FileNotFoundError(f"Invalid view name: {template_name}")
         normalized = template_name.replace("\\", "/").lstrip("/")
         file_name = normalized if normalized.endswith(".html") else f"{normalized}.html"
         file_path = (self.views_dir / file_name).resolve()

@@ -18,7 +18,11 @@ class TokenBucket:
     def _cleanup(self, key: str) -> None:
         now = time.time()
         cutoff = now - self.window
-        self._buckets[key] = [t for t in self._buckets[key] if t > cutoff]
+        remaining = [t for t in self._buckets[key] if t > cutoff]
+        if remaining:
+            self._buckets[key] = remaining
+        else:
+            self._buckets.pop(key, None)
 
     def is_allowed(self, key: str) -> bool:
         with self._lock:

@@ -87,11 +87,15 @@ def _bind_value(expected_type: Any, raw: Any, *, path: str) -> Any:
         raise TypeError("Expected a boolean")
 
     if expected_type is int:
+        if raw is None:
+            raise TypeError("Expected an integer, got null")
         if isinstance(raw, bool):
             raise TypeError("Expected an integer")
         return int(raw)
 
     if expected_type is float:
+        if raw is None:
+            raise TypeError("Expected a number, got null")
         return float(raw)
 
     if expected_type is str:

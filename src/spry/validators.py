@@ -44,8 +44,12 @@ class Regex(Validator):
         self._message = message
 
     def validate(self, value: Any, field: str) -> str | None:
-        if value is not None and not self._pattern.match(str(value)):
-            return self._message or f"Field '{field}' does not match required pattern"
+        if value is not None:
+            s = str(value)
+            if len(s) > 10_000:
+                return f"Field '{field}' value is too long for pattern matching"
+            if not self._pattern.match(s):
+                return self._message or f"Field '{field}' does not match required pattern"
         return None
 
 

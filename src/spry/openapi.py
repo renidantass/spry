@@ -74,6 +74,7 @@ class OpenApiBuilder:
 
         handler = self._resolve_handler(route)
         if handler is None:
+            logger.warning("OpenAPI: no handler resolved for route %s %s", route.method, route.path)
             return
 
         doc = self._extract_doc(handler)

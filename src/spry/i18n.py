@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import gettext
+import logging
 import os
 from pathlib import Path
 from typing import Any
+
+logger = logging.getLogger("spry.i18n")
 
 
 class I18nService:
@@ -43,8 +46,8 @@ class I18nService:
                     translation_map = {entry.msgid: entry.msgstr for entry in po if entry.msgstr}
                     class DictTranslations(gettext.GNUTranslations):
                         def __init__(self) -> None:
+                            super().__init__()
                             self._catalog = translation_map
-                            super().__init__(fallback=True)
                     self._translations[locale] = DictTranslations()
                     return self._translations[locale]
             except ImportError:
