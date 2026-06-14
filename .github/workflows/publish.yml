@@ -54,32 +54,41 @@ jobs:
           pip install commitizen build twine
 
       - name: Bump version and generate changelog
-        run: cz bump --yes --changelog
-
-      - name: Get new version
-        id: version
-        run: echo "version=$(cz version --project)" >> $GITHUB_OUTPUT
+        id: bump
+        run: |
+          if cz bump --yes --changelog 2>/dev/null; then
+            echo "bumped=yes" >> "$GITHUB_OUTPUT"
+            echo "version=$(cz version --project)" >> "$GITHUB_OUTPUT"
+          else
+            echo "bumped=no" >> "$GITHUB_OUTPUT"
+            echo "No conventional commits requiring a version bump — skipping release"
+          fi
 
       - name: Push version bump and tag
+        if: steps.bump.outputs.bumped == 'yes'
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
           git push origin main --follow-tags
 
       - name: Create GitHub Release
+        if: steps.bump.outputs.bumped == 'yes'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.version.outputs.version }}
-          name: v${{ steps.version.outputs.version }}
+          tag_name: v${{ steps.bump.outputs.version }}
+          name: v${{ steps.bump.outputs.version }}
           generate_release_notes: true
 
       - name: Build package
+        if: steps.bump.outputs.bumped == 'yes'
         run: python -m build
 
       - name: Check package
+        if: steps.bump.outputs.bumped == 'yes'
         run: python -m twine check dist/*
 
       - name: Publish to PyPI
+        if: steps.bump.outputs.bumped == 'yes'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           skip-existing: true
