@@ -1,0 +1,11 @@
+from dataclasses import dataclass
+
+from spry import key
+
+
+@dataclass(slots=True)
+class Todo:
+    id: int | None = key()
+    title: str = ""
+    description: str = ""
+    done: bool = False

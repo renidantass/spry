@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from spry import DbContext, dbset, key
+from spry import key
 
 
 @dataclass(slots=True)
@@ -13,7 +13,3 @@ class Todo:
 @dataclass(slots=True)
 class CreateTodo:
     title: str
-
-
-class AppDbContext(DbContext):
-    todos = dbset(Todo)

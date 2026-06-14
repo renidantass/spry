@@ -1,0 +1,7 @@
+from spry import DbContext, dbset
+
+from __PACKAGE_NAME__.models import Todo
+
+
+class AppDbContext(DbContext):
+    todos = dbset(Todo)

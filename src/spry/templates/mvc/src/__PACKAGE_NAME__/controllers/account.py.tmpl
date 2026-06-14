@@ -1,0 +1,34 @@
+from __future__ import annotations
+
+from spry import AuthenticatedController, CookieAuthService, HtmlString, Request, ViewRenderer, authorize, controller, get, post
+
+
+@controller("")
+class AccountController(AuthenticatedController):
+    def __init__(self, view_renderer: ViewRenderer, auth: CookieAuthService) -> None:
+        super().__init__(view_renderer, auth)
+
+    @get("/login")
+    def login(self):
+        return self._render_login(None)
+
+    @post("/login")
+    def login_post(self, request: Request):
+        form = request.form()
+        username = (form.get("username") or "").strip()
+        password = (form.get("password") or "").strip()
+        if not username or not password:
+            return self._render_login("Informe usuario e senha.", status_code=400)
+
+        response = self.redirect("/")
+        return self.sign_in(response, user_id=username.lower(), name=username, claims={"role": "admin"})
+
+    @post("/logout")
+    @authorize()
+    def logout(self):
+        response = self.redirect("/login")
+        return self.sign_out(response)
+
+    def _render_login(self, error: str | None, *, status_code: int = 200):
+        error_block = self.partial_view("shared/_alert", {"message": error}) if error else HtmlString("")
+        return self.view("account/login", {"page_title": "Entrar", "error_block": error_block}, status_code=status_code)
