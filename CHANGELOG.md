@@ -40,6 +40,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 [0.1.0]: https://github.com/renidantass/spry/releases/tag/v0.1.0
 
+## v0.5.2 (2026-06-14)
+
+### Refactor
+
+- replace flat 'from spry import X' with explicit submodule imports
+
 ## v0.5.1 (2026-06-14)
 
 ### Fix
