@@ -1,0 +1,19 @@
+from spry import PasswordHasher
+
+from __PACKAGE_NAME__.data import AppDbContext, Todo, User
+
+
+def seed(db: AppDbContext) -> None:
+    hasher = PasswordHasher()
+
+    if db.users.count() == 0:
+        pwd = "__DEFAULT_PASSWORD__"
+        db.users.add(User(username="admin", display_name="Administrator", password_hash=hasher.hash_password(pwd), roles="admin,member"))
+        db.users.add(User(username="demo", display_name="Demo User", password_hash=hasher.hash_password(pwd), roles="member"))
+
+    if db.todos.count() > 0:
+        return
+
+    db.todos.add(Todo(title="Publicar o template MVC", description="Validar o fluxo server-side com UI inspirada no shadcn.", done=False))
+    db.todos.add(Todo(title="Modelar o primeiro modulo", description="Comecar pelo bounded context mais simples.", done=False))
+    db.todos.add(Todo(title="Documentar o onboarding", description="Explicar scaffold, run, watch e seed.", done=True))

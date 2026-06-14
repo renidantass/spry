@@ -1,0 +1,130 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+from spry import AuthenticatedController, CookieAuthService, HtmlString, Request, ViewRenderer, authorize, controller, get, post, serve_static_file
+
+from __PACKAGE_NAME__.data import AppDbContext, Todo
+
+
+BASE_DIR = Path(__file__).resolve().parents[2]
+STATIC_DIR = BASE_DIR / "static"
+
+
+@controller("")
+class HomeController(AuthenticatedController):
+    def __init__(self, db: AppDbContext, view_renderer: ViewRenderer, auth: CookieAuthService) -> None:
+        super().__init__(view_renderer, auth)
+        self.db = db
+
+    @get("/")
+    @authorize()
+    def index(self, request: Request):
+        todos = sorted(self.db.todos.all(), key=lambda item: (item.done, -(item.id or 0)))
+        todo_cards = HtmlString("".join(
+            str(
+                self.partial_view(
+                    "home/_todo_card",
+                    {
+                        "id": todo.id,
+                        "title": todo.title,
+                        "description": todo.description or "Sem descricao ainda.",
+                        "status_label": "Done" if todo.done else "Open",
+                        "status_class": "status-badge status-badge--done" if todo.done else "status-badge",
+                        "toggle_label": "Reabrir" if todo.done else "Concluir",
+                    },
+                )
+            )
+            for todo in todos
+        ))
+        if not todo_cards:
+            todo_cards = self.partial_view("shared/_empty_state")
+
+        return self.view(
+            "home/index",
+            {
+                "page_title": "__PROJECT_NAME__",
+                "project_name": "__PROJECT_NAME__",
+                "total": len(todos),
+                "open_items": len([todo for todo in todos if not todo.done]),
+                "completed": len([todo for todo in todos if todo.done]),
+                "todo_cards": todo_cards,
+                "user_name": request.user.name if request.user is not None else "User",
+            },
+        )
+
+    @get("/static/{name}")
+    def static_file(self, name: str):
+        return serve_static_file(
+            STATIC_DIR,
+            name,
+            {
+                ".css": "text/css; charset=utf-8",
+                ".js": "application/javascript; charset=utf-8",
+            },
+        )
+
+    @post("/todos")
+    @authorize()
+    def create(self, request: Request):
+        form = request.form()
+        title = (form.get("title") or "").strip()
+        description = (form.get("description") or "").strip()
+        if not title:
+            return self.redirect("/")
+
+        self.db.todos.add(Todo(title=title, description=description, done=False))
+        self.db.save_changes()
+        return self.redirect("/")
+
+    @post("/todos/{id}/toggle")
+    @authorize()
+    def toggle(self, id: int):
+        todo = self.db.todos.find(id)
+        if todo is None:
+            return self.text("Not found", 404)
+        todo.done = not todo.done
+        self.db.todos.update(todo)
+        self.db.save_changes()
+        return self.redirect("/")
+
+    @post("/todos/{id}/delete")
+    @authorize()
+    def delete(self, id: int):
+        todo = self.db.todos.find(id)
+        if todo is None:
+            return self.text("Not found", 404)
+        self.db.todos.remove(id)
+        self.db.save_changes()
+        return self.redirect("/")
+
+
+@controller("")
+class AccountController(AuthenticatedController):
+    def __init__(self, view_renderer: ViewRenderer, auth: CookieAuthService) -> None:
+        super().__init__(view_renderer, auth)
+
+    @get("/login")
+    def login(self):
+        return self._render_login(None)
+
+    @post("/login")
+    def login_post(self, request: Request):
+        form = request.form()
+        username = (form.get("username") or "").strip()
+        password = (form.get("password") or "").strip()
+        if not username or not password:
+            return self._render_login("Informe usuario e senha.", status_code=400)
+
+        response = self.redirect("/")
+        return self.sign_in(response, user_id=username.lower(), name=username, claims={"role": "admin"})
+
+    @post("/logout")
+    @authorize()
+    def logout(self):
+        response = self.redirect("/login")
+        return self.sign_out(response)
+
+    def _render_login(self, error: str | None, *, status_code: int = 200):
+        error_block = self.partial_view("shared/_alert", {"message": error}) if error else HtmlString("")
+        return self.view("account/login", {"page_title": "Entrar", "error_block": error_block}, status_code=status_code)

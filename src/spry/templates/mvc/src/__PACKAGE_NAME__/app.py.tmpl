@@ -1,0 +1,36 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+from spry import AppBuilder
+
+from __PACKAGE_NAME__.data import AppDbContext
+
+
+BASE_DIR = Path(__file__).resolve().parents[2]
+
+
+def shell_headers(context, next_handler):
+    response = next_handler()
+    response.headers.setdefault("X-Powered-By", "Spry")
+    response.headers.setdefault("Cache-Control", "no-cache")
+    return response
+
+
+def create_app():
+    builder = AppBuilder(base_path=BASE_DIR)
+    builder.use(shell_headers)
+    builder.add_views(root_path=BASE_DIR)
+    builder.add_auth()
+    builder.add_csrf()
+    builder.add_db_context(AppDbContext)
+    app = builder.build()
+
+    scope = app.create_scope()
+    try:
+        db = scope.resolve(AppDbContext)
+        db.ensure_created()
+    finally:
+        scope.dispose()
+
+    return app

@@ -1,0 +1,109 @@
+# __PROJECT_NAME__
+
+Projeto MVC gerado com `Spry`, com UI server-side inspirada no `shadcn`.
+
+## Requisitos
+
+- Python `3.11+`
+- `pip`
+
+## Instalando O Framework Localmente
+
+Se este projeto estiver usando o `Spry` a partir do repositorio local, instale o framework em modo editavel na pasta onde ele esta clonado:
+
+```bash
+pip install -e ../spry
+```
+
+Se o framework estiver em outro caminho, ajuste o `-e` para a pasta correta.
+
+## Estrutura
+
+- `main.py`: entrypoint simples
+- `appsettings.json`: configuracao de servidor e banco
+- `src/__PACKAGE_NAME__/app.py`: composicao do `AppBuilder`
+- `src/__PACKAGE_NAME__/controllers.py`: rotas MVC
+- `src/__PACKAGE_NAME__/data.py`: entidades e `DbContext`
+- `src/__PACKAGE_NAME__/seed.py`: dados iniciais
+- `static/site.css`: estilos da interface
+- `views/`: layout, pagina e partials em arquivo
+
+## Rodando
+
+### Usando a CLI instalada
+
+```bash
+spry run --app __PACKAGE_NAME__.app:create_app
+```
+
+### Usando o modulo Python
+
+```bash
+python -m spry.cli run --app __PACKAGE_NAME__.app:create_app
+```
+
+Por padrao o app sobe em `http://127.0.0.1:8000`.
+
+Para alterar host e porta:
+
+```bash
+spry run --app __PACKAGE_NAME__.app:create_app --host 0.0.0.0 --port 8080
+```
+
+## Hot Reload
+
+```bash
+spry watch --app __PACKAGE_NAME__.app:create_app
+```
+
+## Seed
+
+Popular o banco inicial:
+
+```bash
+spry seed --entry __PACKAGE_NAME__.seed:seed --context __PACKAGE_NAME__.data:AppDbContext --database __PROJECT_SLUG__.db
+```
+
+## Banco E Migracoes
+
+Gerar migracao:
+
+```bash
+spry migrate add initial --context __PACKAGE_NAME__.data:AppDbContext
+```
+
+Aplicar migracoes:
+
+```bash
+spry migrate apply --database __PROJECT_SLUG__.db
+```
+
+## Fluxo Rapido Local
+
+```bash
+spry seed --entry __PACKAGE_NAME__.seed:seed --context __PACKAGE_NAME__.data:AppDbContext --database __PROJECT_SLUG__.db
+spry run --app __PACKAGE_NAME__.app:create_app
+```
+
+## O Que O Template Entrega
+
+- dashboard inicial server-side
+- cards, badges, buttons, inputs e layout no estilo visual do `shadcn`
+- CRUD simples de tarefas com formularios HTML
+- SQLite integrado com `DbContext`
+- autenticacao por cookie com usuarios persistidos no banco
+- roles basicas e pagina de acesso negado
+- CSRF basico em formularios MVC
+- base pronta para evoluir sem frontend separado
+
+## Template
+
+```bash
+python -m spry.cli new __PROJECT_NAME__ --template mvc
+```
+
+## Desenvolvimento
+
+```bash
+python -m compileall "src"
+```

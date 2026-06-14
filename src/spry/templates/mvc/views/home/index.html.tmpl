@@ -1,0 +1,93 @@
+<div class="page-shell">
+  <header class="topbar">
+    <div>
+      <span class="eyebrow">Spry MVC</span>
+      <h1>Um dashboard server-side com visual inspirado no shadcn.</h1>
+      <p>Controllers finos, SQLite, seed e uma interface pronta para evoluir sem depender de um frontend separado.</p>
+    </div>
+    <div class="hero-actions">
+      <span class="badge badge--outline">{{ user_name }}</span>
+      <span class="badge">Template MVC</span>
+      <form action="/logout" method="post">
+        <button class="button button--ghost" type="submit">Sair</button>
+      </form>
+    </div>
+  </header>
+
+  <main class="layout-grid">
+    <section class="stack">
+      <article class="card card--hero">
+        <div class="card__header">
+          <div>
+            <span class="eyebrow">Overview</span>
+            <h2>{{ project_name }}</h2>
+          </div>
+          <span class="pill">shadcn-inspired</span>
+        </div>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <small>Total</small>
+            <strong>{{ total }}</strong>
+          </div>
+          <div class="metric-card">
+            <small>Em aberto</small>
+            <strong>{{ open_items }}</strong>
+          </div>
+          <div class="metric-card">
+            <small>Concluidas</small>
+            <strong>{{ completed }}</strong>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card__header">
+          <div>
+            <span class="eyebrow">Tasks</span>
+            <h2>Backlog</h2>
+          </div>
+        </div>
+        <div class="todo-list">
+          {{ todo_cards }}
+        </div>
+      </article>
+    </section>
+
+    <aside class="stack">
+      <article class="card">
+        <div class="card__header">
+          <div>
+            <span class="eyebrow">Create</span>
+            <h2>Nova tarefa</h2>
+          </div>
+        </div>
+        <form class="form-stack" action="/todos" method="post">
+          <label class="field">
+            <span>Titulo</span>
+            <input class="input" type="text" name="title" placeholder="Ex.: Publicar primeira versao" required />
+          </label>
+          <label class="field">
+            <span>Descricao</span>
+            <textarea class="textarea" name="description" rows="4" placeholder="Contexto rapido da tarefa"></textarea>
+          </label>
+          <button class="button button--primary" type="submit">Adicionar tarefa</button>
+        </form>
+      </article>
+
+      <article class="card">
+        <div class="card__header">
+          <div>
+            <span class="eyebrow">Stack</span>
+            <h2>O que vem no template</h2>
+          </div>
+        </div>
+        <ul class="feature-list">
+          <li>Rotas MVC com HTML server-side.</li>
+          <li>Layout e partials por arquivo.</li>
+          <li>Componentes visuais inspirados em shadcn.</li>
+          <li>SQLite com `DbContext` e `DbSet`.</li>
+        </ul>
+      </article>
+    </aside>
+  </main>
+</div>

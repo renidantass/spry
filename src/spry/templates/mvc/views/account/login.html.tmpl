@@ -1,0 +1,22 @@
+<div class="page-shell page-shell--auth">
+  <div class="auth-card">
+    <div class="auth-card__intro">
+      <span class="eyebrow">Spry MVC</span>
+      <h1>Entrar no dashboard</h1>
+      <p>Exemplo basico de autenticacao por cookie assinado no template MVC do Spry.</p>
+    </div>
+    {{ error_block }}
+    <form class="form-stack" action="/login" method="post">
+      <label class="field">
+        <span>Usuario</span>
+        <input class="input" type="text" name="username" placeholder="admin" required />
+      </label>
+      <label class="field">
+        <span>Senha</span>
+        <input class="input" type="password" name="password" placeholder="123456" required />
+      </label>
+      <button class="button button--primary" type="submit">Entrar</button>
+    </form>
+    <p class="auth-hint">Qualquer usuario e senha funcionam neste exemplo inicial.</p>
+  </div>
+</div>

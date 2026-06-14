@@ -1,0 +1,29 @@
+# __PROJECT_NAME__
+
+Projeto gerado com `Spry`.
+
+## Rodando
+
+```bash
+pip install -e ../spry
+python -m spry.cli run --app __PACKAGE_NAME__.app:create_app
+```
+
+## Hot Reload
+
+```bash
+python -m spry.cli watch --app __PACKAGE_NAME__.app:create_app
+```
+
+## Migracoes
+
+```bash
+python -m spry.cli migrate add initial --context __PACKAGE_NAME__.data:AppDbContext
+python -m spry.cli migrate apply --database __PROJECT_SLUG__.db
+```
+
+## Seed
+
+```bash
+python -m spry.cli seed --entry __PACKAGE_NAME__.seed:seed --context __PACKAGE_NAME__.data:AppDbContext --database __PROJECT_SLUG__.db
+```

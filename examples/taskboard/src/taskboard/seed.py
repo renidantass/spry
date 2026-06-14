@@ -1,0 +1,9 @@
+from taskboard.data import AppDbContext, Todo
+
+
+def seed(db: AppDbContext) -> None:
+    if db.todos.count() > 0:
+        return
+
+    db.todos.add(Todo(title="Criar a primeira feature", done=False))
+    db.todos.add(Todo(title="Escrever testes", done=False))

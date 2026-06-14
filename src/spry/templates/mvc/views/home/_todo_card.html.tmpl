@@ -1,0 +1,19 @@
+<div class="todo-card">
+  <div class="todo-card__body">
+    <div class="todo-card__title-row">
+      <div>
+        <h3>{{ title }}</h3>
+        <p>{{ description }}</p>
+      </div>
+      <span class="{{ status_class }}">{{ status_label }}</span>
+    </div>
+  </div>
+  <div class="todo-card__actions">
+    <form action="/todos/{{ id }}/toggle" method="post">
+      <button class="button button--secondary" type="submit">{{ toggle_label }}</button>
+    </form>
+    <form action="/todos/{{ id }}/delete" method="post">
+      <button class="button button--ghost" type="submit">Excluir</button>
+    </form>
+  </div>
+</div>

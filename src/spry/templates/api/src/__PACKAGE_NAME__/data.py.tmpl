@@ -1,0 +1,19 @@
+from dataclasses import dataclass
+
+from spry import DbContext, dbset, key
+
+
+@dataclass(slots=True)
+class Todo:
+    id: int | None = key()
+    title: str = ""
+    done: bool = False
+
+
+@dataclass(slots=True)
+class CreateTodo:
+    title: str
+
+
+class AppDbContext(DbContext):
+    todos = dbset(Todo)
