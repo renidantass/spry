@@ -38,7 +38,10 @@ SwaggerUIBundle({
 
 
 class OpenApiBuilder:
-    def __init__(self, title: str = "Spry API", version: str = "0.1.0", description: str = ""):
+    def __init__(self, title: str = "Spry API", version: str = "", description: str = ""):
+        if not version:
+            from spry import __version__
+            version = __version__
         self.title = title
         self.version = version
         self.description = description

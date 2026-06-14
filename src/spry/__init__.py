@@ -1,4 +1,14 @@
-__version__ = "0.1.3"
+try:
+    from pathlib import Path
+    import tomllib
+    _pyproject = Path(__file__).resolve().parents[2] / "pyproject.toml"
+    __version__ = tomllib.load(_pyproject.open("rb")).get("project", {}).get("version", "0.1.0")
+except Exception:
+    try:
+        from importlib.metadata import version as _v
+        __version__ = _v("spry-core")
+    except Exception:
+        __version__ = "0.1.0"
 
 from spry.app import AppBuilder, Application, deprecated
 

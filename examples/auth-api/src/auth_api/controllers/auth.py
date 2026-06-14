@@ -23,7 +23,7 @@ class AuthController:
         user = User(
             username=body.username,
             email=body.email,
-            password_hash=self.hasher.hash(body.password),
+            password_hash=self.hasher.hash_password(body.password),
             role="user",
         )
         self.db.users.add(user)

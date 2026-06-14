@@ -10,13 +10,13 @@ def seed(db: DbContext) -> None:
     admin = User(
         username="admin",
         email="admin@example.com",
-        password_hash=hasher.hash("admin123"),
+        password_hash=hasher.hash_password("admin123"),
         role="admin",
     )
     user = User(
         username="user1",
         email="user1@example.com",
-        password_hash=hasher.hash("user123"),
+        password_hash=hasher.hash_password("user123"),
         role="user",
     )
     db.users.add(admin)

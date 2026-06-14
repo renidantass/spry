@@ -290,7 +290,7 @@ class Layout:
         active_slug: str = "",
         pages: list[dict[str, Any]] | None = None,
         locale: str = "pt",
-        version: str = "0.1.0",
+        version: str = "",
         versions: list[str] | None = None,
         canonical: str = "",
         csp_nonce: str = "",
@@ -303,7 +303,7 @@ class Layout:
         self.pages = pages or []
         self.locale = locale
         self.version = version
-        self.versions = versions or ["0.1.0"]
+        self.versions = versions or [self.version] if self.version else ["0.1.0"]
         self.canonical = canonical
         self.csp_nonce = csp_nonce
         self.base_url = base_url

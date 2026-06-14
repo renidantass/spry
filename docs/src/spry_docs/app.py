@@ -33,8 +33,12 @@ def _get_version() -> str:
         VERSION = pyproject["project"]["version"]
         VERSIONS = [VERSION]
     except Exception:
-        VERSION = "0.1.0"
-        VERSIONS = ["0.1.0"]
+        try:
+            from spry import __version__
+            VERSION = __version__
+        except Exception:
+            VERSION = "0.1.0"
+        VERSIONS = [VERSION]
     return VERSION
 
 
