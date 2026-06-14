@@ -21,10 +21,10 @@ Ele pega algumas ideias do ASP.NET Core e adapta para um fluxo mais pythonic:
 
 ## Quick start
 
-Instale o framework localmente:
+Instale o framework via PyPI:
 
 ```bash
-pip install -e .
+pip install spry-core
 ```
 
 Crie uma API:
@@ -333,10 +333,10 @@ Contribuições são bem-vindas! Leia o [`CONTRIBUTING.md`](CONTRIBUTING.md) par
 
 ### Release flow
 
-1. Crie uma branch `release/vX.Y.Z` a partir de `main`
-2. Ajuste versão e changelog
-3. Merge para `main` e crie uma tag `vX.Y.Z`
-4. O GitHub Release é criado a partir da tag
+O release é totalmente automatizado via CI/CD:
+
+1. Faça commits seguindo [Conventional Commits](https://www.conventionalcommits.org/) — a versão é calculada automaticamente
+2. O merge para `main` dispara: testes → bump de versão → tag → GitHub Release → PyPI
 
 ### CI
 
@@ -350,36 +350,6 @@ O workflow de CI roda em todos os PRs para `main` com Python 3.11, 3.12 e 3.13 e
 - `examples/taskboard` — exemplo de API usando o framework
 - `docs` — site de documentação do framework
 - `tests` — suite de testes
-
-## Developing locally
-
-Instale em modo editável:
-
-```bash
-pip install -e .
-pip install -e ".[all]"   # dependências opcionais
-```
-
-### Rodando os exemplos
-
-```bash
-pip install -e .
-cd examples/taskboard
-spy run --app taskboard.app:create_app
-```
-
-### Rodando os testes
-
-```bash
-python -m unittest discover -s tests
-```
-
-### Documentação local
-
-```bash
-cd docs
-spry run --app spry_docs.app:create_app --host 127.0.0.1 --port 8010
-```
 
 ## Documentation site
 

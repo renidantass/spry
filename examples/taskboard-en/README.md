@@ -7,20 +7,6 @@ Example API built with Spry.
 - Python 3.11+
 - pip
 
-## Local Setup
-
-At the root of `spry/`, install the framework in editable mode:
-
-```bash
-pip install -e .
-```
-
-If you are inside `examples/taskboard-en`, you can use:
-
-```bash
-pip install -e ../../
-```
-
 ## Structure
 
 - `main.py`: simple entrypoint

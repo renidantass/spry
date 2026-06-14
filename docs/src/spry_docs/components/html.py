@@ -173,13 +173,14 @@ class SearchBar:
 
 
 class Sidebar:
-    def __init__(self, pages: list[dict[str, Any]], active_slug: str = "") -> None:
+    def __init__(self, pages: list[dict[str, Any]], active_slug: str = "", base_url: str = "") -> None:
         self.pages = pages
         self.active_slug = active_slug
+        self.base_url = base_url
 
     def render(self) -> str:
         items = "".join(
-            f'<a href="/docs/{p["slug"]}" class="sb-item{" is-active" if p["slug"] == self.active_slug else ""}">'
+            f'<a href="{self.base_url}/docs/{p["slug"]}" class="sb-item{" is-active" if p["slug"] == self.active_slug else ""}">'
             f'{escape(p.get("title", p["slug"]))}</a>'
             for p in self.pages
         )
@@ -286,6 +287,7 @@ class Layout:
         versions: list[str] | None = None,
         canonical: str = "",
         csp_nonce: str = "",
+        base_url: str = "",
     ) -> None:
         self.title = title
         self.description = description
@@ -297,9 +299,10 @@ class Layout:
         self.versions = versions or ["0.1.0"]
         self.canonical = canonical
         self.csp_nonce = csp_nonce
+        self.base_url = base_url
 
     def render(self) -> str:
-        sidebar = Sidebar(self.pages, self.active_slug).render()
+        sidebar = Sidebar(self.pages, self.active_slug, self.base_url).render()
         search = SearchBar().render()
         vs = VersionSelector(self.versions, self.version).render()
         alt_locale = "en" if self.locale == "pt" else "pt"
@@ -320,29 +323,29 @@ class Layout:
 <meta name="twitter:card" content="summary"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="/assets/site.css"/>
+<link rel="stylesheet" href="{self.base_url}/assets/site.css"/>
 </head>
 <body>
 <div class="topbar">
-  <a href="/" class="tb-brand">spry</a>
+  <a href="{self.base_url}/" class="tb-brand">spry</a>
   <div class="tb-nav">
-    <a href="/docs/getting-started" class="tb-link">Docs</a>
-    <a href="/api/spry/app" class="tb-link">API</a>
-    <a href="/playground" class="tb-link">Playground</a>
+    <a href="{self.base_url}/docs/getting-started" class="tb-link">Docs</a>
+    <a href="{self.base_url}/api/spry/app" class="tb-link">API</a>
+    <a href="{self.base_url}/playground" class="tb-link">Playground</a>
   </div>
   <div class="tb-right">
     {vs}
-    <a href="#" onclick="event.preventDefault();document.cookie='spry_locale={alt_locale};path=/';window.location.href='/docs/getting-started'" class="tb-locale">{alt_label}</a>
+    <a href="#" onclick="event.preventDefault();document.cookie='spry_locale={alt_locale};path=/';window.location.href='{self.base_url}/docs/getting-started'" class="tb-locale">{alt_label}</a>
     <button class="tb-menu" onclick="toggleMobileMenu()">☰</button>
   </div>
 </div>
 
 <div class="mobile-nav" id="mobileNav" onclick="closeMobileMenu(event)">
   <div class="mn-inner">
-    <a href="/" class="mn-link">Home</a>
-    <a href="/docs/getting-started" class="mn-link">Docs</a>
-    <a href="/api/spry/app" class="mn-link">API</a>
-    <a href="/playground" class="mn-link">Playground</a>
+    <a href="{self.base_url}/" class="mn-link">Home</a>
+    <a href="{self.base_url}/docs/getting-started" class="mn-link">Docs</a>
+    <a href="{self.base_url}/api/spry/app" class="mn-link">API</a>
+    <a href="{self.base_url}/playground" class="mn-link">Playground</a>
     {search}
   </div>
 </div>
@@ -363,7 +366,7 @@ class Layout:
 </footer>
 
 <script>
-const SEARCH_INDEX_URL = '/search-index.json';
+const SEARCH_INDEX_URL = '{self.base_url}/search-index.json';
 let searchIndex = null;
 
 async function loadSearchIndex() {{
@@ -441,7 +444,7 @@ async function runPlayground(btn) {{
   const output = pg.querySelector('.pg-out');
   output.textContent = 'Running...';
   try {{
-    const res = await fetch('/api/run', {{
+    const res = await fetch('{self.base_url}/api/run', {{
       method: 'POST',
       headers: {{ 'Content-Type': 'application/json' }},
       body: JSON.stringify({{ code: code }})

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from pathlib import Path
 from typing import Any
 
@@ -115,6 +116,7 @@ def _build_search_index(locale: str) -> list[dict[str, Any]]:
 
 
 def create_app() -> Any:
+    base_url = os.environ.get("SPRY_DOCS_BASE_URL", "")
     builder = AppBuilder(base_path=DOCS_DIR)
 
     def security_headers(context: Any, next_handler: Any) -> Response:
@@ -181,7 +183,7 @@ def create_app() -> Any:
             + "</div>"
         )
 
-        html = Layout(
+        html = Layout(base_url=base_url,
             title="Spry Framework",
             description="Framework Python opinado para APIs e web apps",
             body=body,
@@ -190,7 +192,7 @@ def create_app() -> Any:
             locale=locale,
             version=VERSION,
             versions=VERSIONS,
-            canonical="/",
+            canonical=base_url or "/",
         ).render()
         return Response.html(html)
 
@@ -204,7 +206,7 @@ def create_app() -> Any:
                 f'<p>A documentação para <code>{slug}</code> não foi encontrada.</p>'
                 f'<a href="/docs/getting-started" class="btn btn-primary">Ver documentação</a>'
             )
-            html = Layout(
+            html = Layout(base_url=base_url,
                 title="404 — Spry",
                 description="Page not found",
                 body=body,
@@ -245,7 +247,7 @@ def create_app() -> Any:
             f'{sections_html}'
         )
 
-        html = Layout(
+        html = Layout(base_url=base_url,
             title=f"{title} — Spry",
             description=desc or fm.description,
             body=body,
@@ -254,7 +256,7 @@ def create_app() -> Any:
             locale=locale,
             version=VERSION,
             versions=VERSIONS,
-            canonical=f"/docs/{slug}",
+            canonical=f"{base_url}/docs/{slug}",
         ).render()
         return Response.html(html)
 
@@ -287,7 +289,7 @@ def create_app() -> Any:
             else:
                 body = page
 
-        html = Layout(
+        html = Layout(base_url=base_url,
             title=f"API — Spry",
             description="API Reference",
             body=body,
@@ -320,7 +322,7 @@ def create_app() -> Any:
             _, blocks = parse_markdown(changelog_path.read_text("utf-8"))
             body = "<h1>Changelog</h1>" + "".join(render_block(b) for b in blocks)
 
-        html = Layout(
+        html = Layout(base_url=base_url,
             title="Changelog — Spry",
             description="Histórico de versões",
             body=body,
@@ -359,7 +361,7 @@ def create_app() -> Any:
             '<pre class="pg-out" id="pgOutput">Click "Run" to execute</pre>'
             '</div>'
         )
-        html = Layout(
+        html = Layout(base_url=base_url,
             title="Playground — Spry",
             description="Teste Spry no navegador",
             body=body,
@@ -400,7 +402,7 @@ def create_app() -> Any:
         finally:
             Path(f.name).unlink(missing_ok=True)
 
-    builder.map_get("/", landing_page)
+    builder.map_get(base_url or "/", landing_page)
     def docs_page_locale(locale: str, slug: str, request: Request) -> Response:
         # Set locale cookie and redirect to the standard path
         import json
@@ -409,17 +411,17 @@ def create_app() -> Any:
         resp.set_cookie("spry_locale", locale, path="/")
         return resp
 
-    builder.map_get("/docs/{slug}", docs_page)
-    builder.map_get("/docs/{locale}/{slug}", docs_page_locale)
-    builder.map_get("/search-index.json", search_index)
-    builder.map_get("/api/{path:path}", api_page)
-    builder.map_get("/assets/{name}", asset)
-    builder.map_get("/changelog", change_log)
+    builder.map_get(f"{base_url}/docs/{{slug}}", docs_page)
+    builder.map_get(f"{base_url}/docs/{{locale}}/{{slug}}", docs_page_locale)
+    builder.map_get(f"{base_url}/search-index.json", search_index)
+    builder.map_get(f"{base_url}/api/{{path:path}}", api_page)
+    builder.map_get(f"{base_url}/assets/{{name}}", asset)
+    builder.map_get(f"{base_url}/changelog", change_log)
     def favicon() -> Response:
         return Response.empty(204)
 
-    builder.map_get("/playground", playground)
-    builder.map_post("/api/run", run_code)
-    builder.map_get("/favicon.ico", favicon)
+    builder.map_get(f"{base_url}/playground", playground)
+    builder.map_post(f"{base_url}/api/run", run_code)
+    builder.map_get(f"{base_url}/favicon.ico", favicon)
 
     return builder.build()

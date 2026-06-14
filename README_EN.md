@@ -23,46 +23,46 @@ It takes some ideas from ASP.NET Core and adapts them to a more pythonic workflo
 
 Install the framework:
 
-\\\ash
+```bash
 pip install spry-core
-\\\
+```
 
 With database support:
 
-\\\ash
+```bash
 pip install spry-core[postgres]
 pip install spry-core[mysql]
 pip install spry-core[sqlserver]
 pip install spry-core[all]
-\\\
+```
 
 Create an API:
 
-\\\ash
+```bash
 spry new taskboard
 cd taskboard
 spry run --app taskboard.app:create_app
-\\\
+```
 
 Create an MVC project:
 
-\\\ash
+```bash
 spry new backoffice --template mvc
 cd backoffice
 spry run --app backoffice.app:create_app
-\\\
+```
 
 ### Hot reload
 
-\\\ash
+```bash
 spry watch --app taskboard.app:create_app
-\\\
+```
 
 ## First manual app
 
 The smallest useful example with Spry today:
 
-\\\python
+```python
 from dataclasses import dataclass
 
 from spry import AppBuilder, ControllerBase, DbContext, controller, dbset, get, key, post
@@ -99,7 +99,7 @@ builder = AppBuilder()
 builder.add_db_context(AppDbContext)
 app = builder.build()
 app.run()
-\\\
+```
 
 You don't need to register controllers manually. AppBuilder automatically discovers classes decorated with @controller in the application package.
 
@@ -121,11 +121,11 @@ Use Controller when:
 
 ### Templates
 
-\\\
+```
 spry new taskboard               # api template (default)
 spry new backoffice --template mvc
 spry new inventory --output ./projects
-\\\
+```
 
 Template pi:
 
@@ -152,43 +152,43 @@ Template mvc:
 
 ## CLI reference
 
-\\\
+```
 spry new <name> [--template api|mvc] [--output <directory>]
 spry run --app module:factory [--host 127.0.0.1] [--port 8000]
 spry watch --app module:factory [--path extra]
 spry migrate add <name> --context module:DbContext [--output migrations]
 spry migrate apply --database app.db [--input migrations]
 spry seed --entry module:function [--context module:DbContext] [--database app.db]
-\\\
+```
 
 ## Database, migrations and seed
 
 Generate initial SQL from the DbContext:
 
-\\\ash
+```bash
 spry migrate add initial --context taskboard.data:AppDbContext
-\\\
+```
 
 Apply migrations:
 
-\\\ash
+```bash
 spry migrate apply --database taskboard.db
-\\\
+```
 
 Run seed:
 
-\\\ash
+```bash
 spry seed --entry taskboard.seed:seed --context taskboard.data:AppDbContext --database taskboard.db
-\\\
+```
 
 Complete local workflow:
 
-\\\ash
+```bash
 spry migrate add initial --context taskboard.data:AppDbContext
 spry migrate apply --database taskboard.db
 spry seed --entry taskboard.seed:seed --context taskboard.data:AppDbContext --database taskboard.db
 spry run --app taskboard.app:create_app
-\\\
+```
 
 ## Production
 
@@ -196,7 +196,7 @@ spry run --app taskboard.app:create_app
 
 Spry's Application is a WSGI callable compatible with any WSGI server.
 
-\\\ash
+```bash
 # Gunicorn
 pip install gunicorn
 gunicorn taskboard.app:create_app -w 4 -b 0.0.0.0:8000
@@ -204,13 +204,13 @@ gunicorn taskboard.app:create_app -w 4 -b 0.0.0.0:8000
 # Waitress (Windows-friendly)
 pip install waitress
 waitress-serve taskboard.app:create_app
-\\\
+```
 
 ### ASGI server
 
 For environments that require async, Spry is also a valid ASGI callable.
 
-\\\ash
+```bash
 # Uvicorn
 pip install uvicorn
 uvicorn taskboard.app:create_app --host 0.0.0.0 --port 8000 --workers 4
@@ -218,65 +218,65 @@ uvicorn taskboard.app:create_app --host 0.0.0.0 --port 8000 --workers 4
 # Hypercorn
 pip install hypercorn
 hypercorn taskboard.app:create_app --bind 0.0.0.0:8000 --workers 4
-\\\
+```
 
 ### Health check
 
 Every Spry application automatically exposes GET /health:
 
-\\\ash
+```bash
 curl http://localhost:8000/health
 # {"status":"ok","version":"0.1.0","uptime_seconds":42}
-\\\
+```
 
 ### CORS
 
 To consume the API from a browser SPA, configure CORS:
 
-\\\python
+```python
 builder.add_cors(origins=["https://myapp.com"])
 # or for development:
 builder.add_cors(origins=["*"], credentials=False)
-\\\
+```
 
 ### Security
 
 **Secret key:** The uth.secret_key config is required in production. Don't use the default value:
 
-\\\json
+```json
 {
   "auth": {
     "secret_key": "replace-with-a-strong-key-here",
     "cookie_name": "myapp_auth"
   }
 }
-\\\
+```
 
 **Request body limit:** The default is 10 MB. Adjust as needed:
 
-\\\python
+```python
 builder.set_max_body_size(50 * 1024 * 1024)  # 50 MB
-\\\
+```
 
 **Debug mode:** In production, disable debug to avoid leaking stack traces:
 
-\\\json
+```json
 { "server": { "debug": false } }
-\\\
+```
 
 Or programmatically:
 
-\\\python
+```python
 builder.set_debug(False)
-\\\
+```
 
 ### Environment config
 
 Spry loads ppsettings.json and overrides with environment variables prefixed with APP__:
 
-\\\ash
+```bash
 APP__database__url=postgresql://user:password@host/db spry run --app app:create_app
-\\\
+```
 
 ## Troubleshooting
 
@@ -289,16 +289,16 @@ This usually happens because:
 
 Correct example:
 
-\\\ash
+```bash
 spry run --app taskboard.app:create_app
-\\\
+```
 
 If working with the framework and the app side by side:
 
-\\\powershell
+```powershell
 ="\..\src;\taskboard\src"
 python -m spry.cli run --app taskboard.app:create_app
-\\\
+```
 
 ### Controller doesn't respond to route
 
@@ -339,13 +339,12 @@ Contributions are welcome! Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, co
 | ix/* | main | main via PR | Bug fix |
 | docs/* | main | main via PR | Documentation |
 | chore/* | main | main via PR | Maintenance (CI, deps) |
-
 ### Release flow
 
-1. Create a elease/vX.Y.Z branch from main
-2. Adjust version and changelog
-3. Merge to main and tag as X.Y.Z
-4. GitHub Release is created from the tag
+The release is fully automated via CI/CD:
+
+1. Make commits following [Conventional Commits](https://www.conventionalcommits.org/) — the version is calculated automatically
+2. Merging to `main` triggers: tests → version bump → tag → GitHub Release → PyPI
 
 ### CI
 
@@ -358,37 +357,7 @@ The CI workflow runs on all PRs to main with Python 3.11, 3.12, and 3.13 on Linu
 - src/spry/templates/mvc - MVC server-side template
 - examples/taskboard - API example using the framework
 - docs - framework documentation site
-- 	ests - test suite
-
-## Developing locally
-
-Install in editable mode:
-
-\\\ash
-pip install -e .
-pip install -e ".[all]"   # optional dependencies
-\\\
-
-### Running the examples
-
-\\\ash
-pip install -e .
-cd examples/taskboard
-spry run --app taskboard.app:create_app
-\\\
-
-### Running the tests
-
-\\\ash
-python -m unittest discover -s tests
-\\\
-
-### Local documentation
-
-\\\ash
-cd docs
-spry run --app spry_docs.app:create_app --host 127.0.0.1 --port 8010
-\\\
+- tests - test suite
 
 ## Documentation site
 

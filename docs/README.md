@@ -7,16 +7,6 @@ Site de documentacao do framework `Spry`, construido com o proprio framework.
 - Python `3.11+`
 - `pip`
 
-## Instalacao Local
-
-Na raiz de `spry/`, instale o framework em modo editavel:
-
-```bash
-pip install -e .
-```
-
-Isso disponibiliza o modulo `spry` e a CLI `spry` localmente.
-
 ## Estrutura
 
 - `docs/main.py`: entrypoint simples

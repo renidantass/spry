@@ -1,13 +1,14 @@
-"""Build script: gera documentação estática para deploy em CDN."""
+"""Build script: generates static documentation site for CDN deployment."""
 from __future__ import annotations
 
-import asyncio
+import os
 import shutil
 from pathlib import Path
 
 from spry.testing import TestClient
 
 OUTPUT_DIR = Path(__file__).resolve().parent.parent / "dist"
+BASE_URL = os.environ.get("SPRY_DOCS_BASE_URL", "")
 
 PAGES = [
     "/",
@@ -56,7 +57,8 @@ def build() -> None:
         shutil.copytree(assets_src, assets_dst)
 
     for page in PAGES:
-        resp = client.get(page)
+        page_path = BASE_URL if page == "/" else f"{BASE_URL}{page.rstrip('/')}"
+        resp = client.get(page_path)
         file_path = OUTPUT_DIR / page.lstrip("/") / "index.html"
         if page == "/":
             file_path = OUTPUT_DIR / "index.html"
@@ -66,7 +68,7 @@ def build() -> None:
         file_path.write_text(resp.text, encoding="utf-8")
         print(f"  ✓ {page}")
 
-    resp = client.get("/search-index.json")
+    resp = client.get(f"{BASE_URL}/search-index.json")
     (OUTPUT_DIR / "search-index.json").write_text(resp.text, encoding="utf-8")
 
     print(f"\nBuild complete: {OUTPUT_DIR}")

@@ -53,5 +53,10 @@ where = ["src"]
 [tool.setuptools.package-data]
 spry = ["templates/**/*"]
 
+[tool.commitizen]
+name = "cz_conventional_commits"
+version_files = ["pyproject.toml:version"]
+tag_format = "v$version"
+
 
 

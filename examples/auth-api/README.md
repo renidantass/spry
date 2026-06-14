@@ -7,20 +7,6 @@ Demonstrates user registration, login, protected routes and role-based access co
 - Python 3.11+
 - pip
 
-## Local Setup
-
-At the root of spry/, install the framework in editable mode:
-
-`ash
-pip install -e .
-`
-
-If you are inside examples/auth-api, you can use:
-
-`ash
-pip install -e ../../
-`
-
 ## Structure
 
 - main.py: simple entrypoint
