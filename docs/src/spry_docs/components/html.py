@@ -192,9 +192,10 @@ class Breadcrumb:
         self.path = path
 
     def render(self) -> str:
+        sep = '<span class="bc-sep">/</span>'
         items = "".join(
             f'<span class="bc-item"><a href="{link}">{escape(label)}</a></span>'
-            f'{"<span class=\"bc-sep\">/</span>" if i < len(self.path) - 1 else ""}'
+            f'{sep if i < len(self.path) - 1 else ""}'
             for i, (label, link) in enumerate(self.path)
         )
         return f'<nav class="bc">{items}</nav>'
