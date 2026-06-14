@@ -164,7 +164,7 @@ class SearchBar:
     def render(self) -> str:
         return (
             '<div class="srch">'
-            '<input type="text" class="srch-inp" placeholder="Search docs..." '
+            '<input type="text" class="srch-inp" placeholder="Search docs...  (Ctrl+K)" '
             'oninput="searchDocs(this.value)" id="searchInput" />'
             '<div class="srch-ico">🔍</div>'
             '<div class="srch-rs" id="searchResults"></div>'
@@ -313,7 +313,8 @@ class Layout:
         search = SearchBar().render()
         vs = VersionSelector(self.versions, self.version).render()
         alt_locale = "en" if self.locale == "pt" else "pt"
-        alt_label = "🇺🇸 EN" if self.locale == "pt" else "🇧🇷 PT"
+        flag_name = "us" if self.locale == "pt" else "br"
+        alt_label = f'<img src="{self.base_url}/assets/flag-{flag_name}.svg" class="tb-flag" alt=""> {"EN" if self.locale == "pt" else "PT"}'
         canonical_tag = f'<link rel="canonical" href="{self.canonical}"/>' if self.canonical else ""
 
         return f"""<!DOCTYPE html>

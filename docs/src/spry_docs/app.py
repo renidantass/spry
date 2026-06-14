@@ -487,6 +487,7 @@ def create_app() -> Any:
     builder.map_get(f"{base_url}/{{locale}}/search-index.json", search_index)
     builder.map_get(f"{base_url}/api", lambda request: api_page("", request))
     builder.map_get(f"{base_url}/api/", lambda request: api_page("", request))
+    builder.map_post(f"{base_url}/api/run", run_code)
     builder.map_get(f"{base_url}/api/{{path:path}}", api_page)
     builder.map_get(f"{base_url}/assets/{{name}}", asset)
     builder.map_get(f"{base_url}/changelog", change_log)
@@ -494,7 +495,6 @@ def create_app() -> Any:
         return Response.empty(204)
 
     builder.map_get(f"{base_url}/playground", playground)
-    builder.map_post(f"{base_url}/api/run", run_code)
     builder.map_get(f"{base_url}/favicon.ico", favicon)
 
     def not_found(request: Request) -> Response:

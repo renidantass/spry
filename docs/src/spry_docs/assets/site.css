@@ -361,6 +361,32 @@ li { margin-bottom: 4px; color: var(--tx2); }
 .path-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
 @media (max-width: 640px) { .path-grid { grid-template-columns: 1fr; } }
 
+/* Flag icons */
+.tb-flag { width: 18px; height: 13px; vertical-align: middle; border-radius: 2px; }
+
+/* API Reference */
+.api-method {
+  background: var(--bg3);
+  border: 1px solid var(--br);
+  border-radius: var(--r);
+  padding: 16px;
+  margin: 12px 0;
+  transition: border-color 0.15s;
+}
+.api-method:hover { border-color: var(--bl); }
+.api-sig {
+  font-family: var(--fm);
+  font-size: 13px;
+  color: var(--tx);
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+.api-method p {
+  font-size: 14px;
+  color: var(--tx2);
+  margin-bottom: 0;
+}
+
 /* Responsive */
 @media (max-width: 1120px) {
   .layout-sb { display: none; }
