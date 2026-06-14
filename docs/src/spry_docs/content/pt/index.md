@@ -15,7 +15,11 @@ Ele pega ideias do ASP.NET Core e adapta para um fluxo mais *pythonic*:
 - **Middleware por pipeline**
 - **Validação de payload** com resposta 422
 - **Suporte WSGI e ASGI** no mesmo app
-- **OpenAPI/Swagger** automático
+- **OpenAPI/Swagger** automático com security schemes
+- **Exceções tipadas** traduzidas em `ProblemDetail` (RFC 9457)
+- **StreamingResponse** para servir arquivos grandes sem carregar tudo em memória
+- **JWT** com HS256 / HS384 / HS512
+- **Handlers async** funcionam via ASGI (`asyncio.to_thread`)
 
 ## Para quem é
 

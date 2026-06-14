@@ -94,7 +94,7 @@ class TodosController(ControllerBase):
     @post("/")
     def create(self, todo: Todo):
         self.db.todos.add(todo)
-        self.db.save_changes()
+        self.db.save()
         return self.created(f"/todos/{todo.id}", todo)
 
 
@@ -119,6 +119,105 @@ Use Controller when:
 - The app serves HTML
 - You want self.view(...), self.partial_view(...) and self.redirect(...)
 - The project follows server-side MVC
+
+## Error handling
+
+The pipeline translates typed exceptions into `ProblemDetail` (RFC 9457) responses automatically. Raise the appropriate exception in any handler or middleware:
+
+```python
+from spry import NotFoundError, BadRequestError, ConflictError, ForbiddenError
+
+
+@controller("/users")
+class UsersController(ControllerBase):
+    def __init__(self, db: AppDbContext) -> None:
+        self.db = db
+
+    @get("/{id:int}")
+    def show(self, id: int):
+        user = self.db.users.find(id)
+        if user is None:
+            raise NotFoundError(f"user {id} not found")
+        return user
+
+    @post("/")
+    def create(self, payload: CreateUser):
+        if self.db.users.first(email=payload.email) is not None:
+            raise ConflictError("email already registered")
+        return self.db.users.add(payload)
+```
+
+Available in `spry.errors`:
+
+| Exception | Status | When to use |
+| --- | --- | --- |
+| `BadRequestError` | 400 | Malformed input, invalid type outside validation |
+| `UnauthorizedError` | 401 | Missing / invalid authentication |
+| `ForbiddenError` | 403 | Authenticated but no permission |
+| `NotFoundError` | 404 | Resource does not exist |
+| `ConflictError` | 409 | Duplicates, invariant violation |
+| `UnprocessableEntityError` | 422 | Semantic validation (auto-binding uses the same status with `errors[]`) |
+
+Unhandled exceptions return `500 Internal Server Error` in production or the debug page when `set_debug(True)`.
+
+## JWT with HS256 / HS384 / HS512
+
+`JwtAuthService` accepts any HMAC-SHA from the OpenAPI suite:
+
+```python
+builder.add_jwt_auth(secret_key=SECRET, algorithm="HS384", ttl=3600)
+```
+
+Currently supported: `HS256`, `HS384`, `HS512`. `RS256` / `ES256` require the optional `cryptography` extra and are not yet wired up.
+
+## OpenAPI security schemes
+
+When you call `add_auth` (cookie) or `add_jwt_auth` (Bearer), the generated OpenAPI spec at `/openapi.json` automatically includes the matching `securitySchemes` and tags every route guarded with `@authorize`:
+
+```python
+builder.add_jwt_auth(secret_key=SECRET)        # -> securitySchemes.BearerAuth
+builder.add_auth(secret_key=SECRET)            # -> securitySchemes.CookieAuth (apiKey/cookie)
+
+# custom scheme:
+builder.add_security_scheme("ApiKeyAuth", {
+    "type": "apiKey",
+    "in": "header",
+    "name": "X-API-Key",
+})
+```
+
+## Async handlers
+
+Handlers can be `async def`. The pipeline itself stays sync, but the ASGI entry point (`uvicorn`, `hypercorn`) dispatches each request to a worker thread via `asyncio.to_thread`, so coroutines work without an `asyncio.run()`-in-running-loop error:
+
+```python
+@get("/async")
+async def list_async():
+    return await some_async_io()
+```
+
+This is not the same as a fully async pipeline. For streaming responses under ASGI, use `spry.StreamingResponse` (see below).
+
+## Streaming large responses
+
+`StreamingResponse` avoids loading the entire body in memory. Useful for large file serving or on-demand data generation:
+
+```python
+from spry import StreamingResponse
+
+@get("/export.csv")
+def export(request):
+    def chunks(block_size: int = 64 * 1024):
+        with open("big.csv", "rb") as fp:
+            while True:
+                buf = fp.read(block_size)
+                if not buf:
+                    return
+                yield buf
+    return StreamingResponse(chunks, headers={"Content-Type": "text/csv"})
+```
+
+`builder.add_static_files` uses this automatically for files above 256 KB. `If-None-Match` is honored — clients that send the ETag back get a `304 Not Modified` with no body.
 
 ## Creating a project
 

@@ -38,13 +38,33 @@ def admin_panel(self):
 
 ```python
 builder.add_jwt_auth(secret_key=os.getenv("JWT_SECRET"))
+# or with custom algorithm and TTL:
+builder.add_jwt_auth(secret_key=os.getenv("JWT_SECRET"), algorithm="HS384", ttl=3600)
 ```
+
+Supported algorithms: `HS256`, `HS384`, `HS512` (HMAC-SHA from the OpenAPI suite). `RS256` and `ES256` require the optional `cryptography` extra and are not yet wired up.
 
 Clients send the token in the header:
 
 ```
 Authorization: Bearer <token>
 ```
+
+`add_jwt_auth` automatically registers a `BearerAuth` (`http` / `bearer` / `JWT`) entry in the OpenAPI `securitySchemes` at `/openapi.json`, so the Swagger UI at `/docs` shows the "Authorize" button out of the box.
+
+## OpenAPI security schemes
+
+The OpenAPI spec exposes the registered schemes so the client can test Authorization from the Swagger UI. Default schemes are created by `add_auth` (`apiKey` in cookie) and `add_jwt_auth` (`http` Bearer). To register a custom scheme:
+
+```python
+builder.add_security_scheme("ApiKeyAuth", {
+    "type": "apiKey",
+    "in": "header",
+    "name": "X-API-Key",
+})
+```
+
+Routes decorated with `@authorize` automatically get the `security` field populated in the OpenAPI spec.
 
 ## CSRF
 

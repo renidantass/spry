@@ -7,6 +7,7 @@ import json
 import logging
 import pkgutil
 import signal
+import time
 from dataclasses import is_dataclass
 from pathlib import Path
 from types import ModuleType
@@ -63,6 +64,7 @@ class Application:
         self._error_handlers = error_handlers or {}
         self._openapi_spec: dict[str, Any] | None = None
         self._route_index: dict[str, list[RouteDefinition]] = {}
+        self._started_at = time.time()
         for route in routes:
             self._route_index.setdefault(route.method, []).append(route)
 

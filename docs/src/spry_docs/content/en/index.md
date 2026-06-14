@@ -15,7 +15,11 @@ It takes ideas from ASP.NET Core and adapts them to a more *pythonic* workflow:
 - **Middleware pipeline**
 - **Payload validation** with 422 response
 - **WSGI and ASGI support** in the same app
-- **OpenAPI/Swagger** auto-generation
+- **OpenAPI/Swagger** auto-generation with security schemes
+- **Typed exceptions** translated to `ProblemDetail` (RFC 9457)
+- **StreamingResponse** for large file serving without buffering
+- **JWT** with HS256 / HS384 / HS512
+- **Async handlers** work under ASGI via `asyncio.to_thread`
 
 ## Who is it for
 

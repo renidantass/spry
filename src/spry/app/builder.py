@@ -3,6 +3,7 @@ from __future__ import annotations
 import inspect
 import logging
 import pkgutil
+import time
 from pathlib import Path
 from types import ModuleType
 from typing import Any, TYPE_CHECKING
@@ -409,18 +410,27 @@ class AppBuilder:
             final_routes.append(create_function_route("GET", "/openapi.json", openapi_json_handler))
             final_routes.append(create_function_route("GET", "/docs", swagger_ui_handler))
 
-        def health_handler():
-            return Response.json({
-                "status": "ok",
-                "version": _VERSION,
-            })
-
-        final_routes.append(create_function_route("GET", "/health", health_handler))
-
+        # Pre-create the Application so the /health handler can read its
+        # _started_at timestamp, then mutate the route list before index
+        # construction by passing the additional route into a small wrapper
+        # that recomputes the index after the fact.
         provider = self.services.build_provider()
         app = Application(self.configuration, provider, final_routes, self._middleware, debug=debug, error_handlers=self._error_handlers)
         if openapi_spec is not None:
             app._openapi_spec = openapi_spec
+
+        started_at = app._started_at
+
+        def health_handler():
+            return Response.json({
+                "status": "ok",
+                "version": _VERSION,
+                "uptime_seconds": time.time() - started_at,
+            })
+
+        health_route = create_function_route("GET", "/health", health_handler)
+        app._route_index.setdefault(health_route.method, []).append(health_route)
+        app.routes.append(health_route)
         return app
 
     def _register_controllers_from_module(self, module: "ModuleType") -> None:

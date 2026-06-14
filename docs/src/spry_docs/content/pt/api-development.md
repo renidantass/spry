@@ -110,6 +110,93 @@ class CreateUser:
 
 Erros de validação retornam `422 Validation failed` com detalhes.
 
+## Exceções tipadas (ProblemDetail)
+
+A pipeline converte exceções do módulo `spry.errors` em respostas `ProblemDetail` (RFC 9457) automaticamente. Levante a exceção apropriada em qualquer handler:
+
+```python
+from spry import NotFoundError, ConflictError, ForbiddenError, UnauthorizedError, BadRequestError
+
+@controller("/users")
+class UsersController(ControllerBase):
+    @get("/{id:int}")
+    def show(self, id: int):
+        user = self.db.users.find(id)
+        if user is None:
+            raise NotFoundError(f"user {id} not found")
+        return user
+
+    @post("/")
+    def create(self, payload: CreateUser):
+        if self.db.users.first(email=payload.email) is not None:
+            raise ConflictError("email already registered")
+        return self.db.users.add(payload)
+```
+
+| Exceção | Status | Uso típico |
+| --- | --- | --- |
+| `BadRequestError` | 400 | Entrada malformada fora de validação |
+| `UnauthorizedError` | 401 | Credencial ausente ou inválida |
+| `ForbiddenError` | 403 | Autenticado mas sem permissão |
+| `NotFoundError` | 404 | Recurso inexistente |
+| `ConflictError` | 409 | Duplicidade ou invariante violada |
+| `UnprocessableEntityError` | 422 | Validação semântica (binding usa o mesmo status com `errors[]`) |
+
+Todas as exceções não tratadas viram `500 Internal Server Error` em produção, ou a página de debug quando `set_debug(True)`.
+
+## OpenAPI e security schemes
+
+Chamar `add_auth` (cookie) ou `add_jwt_auth` (Bearer) registra o `securitySchemes` correspondente no spec OpenAPI em `/openapi.json` e marca automaticamente as rotas com `@authorize` como protegidas. Para schemes customizados:
+
+```python
+builder.add_security_scheme("ApiKeyAuth", {
+    "type": "apiKey",
+    "in": "header",
+    "name": "X-API-Key",
+})
+```
+
+A UI Swagger em `/docs` passa a exibir o botão "Authorize" automaticamente quando há ao menos um scheme registrado.
+
+## Handlers async e streaming
+
+Handlers podem ser `async def`. O pipeline continua síncrono, mas o adapter ASGI despacha cada request para uma thread de trabalho via `asyncio.to_thread`, então coroutines funcionam sem erro de event loop:
+
+```python
+@get("/async")
+async def list_async():
+    return await some_async_io()
+```
+
+Para respostas grandes use `StreamingResponse`, que envia o body em chunks sem carregar tudo em memória:
+
+```python
+from spry import StreamingResponse
+
+@get("/export.csv")
+def export():
+    def chunks(block_size: int = 64 * 1024):
+        with open("big.csv", "rb") as fp:
+            while True:
+                buf = fp.read(block_size)
+                if not buf:
+                    return
+                yield buf
+    return StreamingResponse(chunks, headers={"Content-Type": "text/csv"})
+```
+
+`builder.add_static_files` usa streaming automaticamente para arquivos acima de 256 KB e honra `If-None-Match` retornando `304` quando o ETag bate.
+
+## JWT com HS256 / HS384 / HS512
+
+`JwtAuthService` aceita qualquer HMAC-SHA:
+
+```python
+builder.add_jwt_auth(secret_key=SECRET, algorithm="HS384", ttl=3600)
+```
+
+Algoritmos suportados: `HS256`, `HS384`, `HS512`. Assinaturas assimétricas (`RS256`, `ES256`) ainda não foram integradas.
+
 ## Middleware de autenticação
 
 ### Cookie Auth

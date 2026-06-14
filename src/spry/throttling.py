@@ -45,6 +45,11 @@ class TokenBucket:
             return time.time() + self.window
 
 
+# Backward-compatible alias. Older code paths referred to the in-memory rate
+# limiter as InMemoryStore; TokenBucket has always been that implementation.
+InMemoryStore = TokenBucket
+
+
 def rate_limit_middleware_factory(
     bucket: TokenBucket,
     key_func: Any = None,

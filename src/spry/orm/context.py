@@ -128,6 +128,10 @@ class DbContext:
     def save(self) -> None:
         self.connection.commit()
 
+    def save_changes(self) -> None:
+        """Backward-compatible alias for :meth:`save`."""
+        self.save()
+
     def close(self) -> None:
         if self._pool is not None:
             self._pool.release(self.connection)

@@ -85,7 +85,7 @@ class TodosController(ControllerBase):
     @post("/")
     def create(self, todo: Todo):
         self.db.todos.add(todo)
-        self.db.save_changes()
+        self.db.save()
         return self.created(f"/todos/{todo.id}", todo)
 
 
@@ -110,6 +110,149 @@ Use `Controller` quando:
 - O app serve HTML
 - Você quer `self.view(...)`, `self.partial_view(...)` e `self.redirect(...)`
 - O projeto segue MVC server-side
+
+## Error handling
+
+A pipeline converte exceções tipadas em respostas `ProblemDetail` (RFC 9457) automaticamente. Levante a exceção apropriada em qualquer handler ou middleware:
+
+```python
+from spry import NotFoundError, BadRequestError, ConflictError, ForbiddenError
+
+
+@controller("/users")
+class UsersController(ControllerBase):
+    def __init__(self, db: AppDbContext) -> None:
+        self.db = db
+
+    @get("/{id:int}")
+    def show(self, id: int):
+        user = self.db.users.find(id)
+        if user is None:
+            raise NotFoundError(f"user {id} not found")
+        return user
+
+    @post("/")
+    def create(self, payload: CreateUser):
+        if self.db.users.first(email=payload.email) is not None:
+            raise ConflictError("email already registered")
+        return self.db.users.add(payload)
+```
+
+Hierarquia disponível em `spry.errors`:
+
+| Exceção | Status | Quando usar |
+|---|---|---|
+| `BadRequestError` | 400 | Input malformado, tipo inválido fora de validação |
+| `UnauthorizedError` | 401 | Autenticação ausente/inválida |
+| `ForbiddenError` | 403 | Autenticado mas sem permissão |
+| `NotFoundError` | 404 | Recurso inexistente |
+| `ConflictError` | 409 | Duplicidade, violação de invariante |
+| `UnprocessableEntityError` | 422 | Validação semântica (a validação automática do binding usa o mesmo status com `errors[]`) |
+
+Para erros não tipados que cheguem ao framework, ele retorna `500 Internal Server Error` em produção ou a página de debug quando `set_debug(True)`.
+
+## Typed HTTP exceptions
+
+Levante `spry.errors.SpryError` (ou uma subclasse) a qualquer momento e a pipeline devolve um ProblemDetail formatado com o status correto, sem precisar capturar nada manualmente.
+
+```python
+from spry import NotFoundError, ForbiddenError
+
+
+@controller("/todos")
+class TodosController(ControllerBase):
+    def __init__(self, db: AppDbContext) -> None:
+        self.db = db
+
+    @get("/{id:int}")
+    def show(self, id: int):
+        todo = self.db.todos.find(id)
+        if todo is None:
+            raise NotFoundError(f"todo {id} not found")
+        return todo
+
+    @delete("/{id:int}")
+    def remove(self, id: int, request: Request):
+        todo = self.db.todos.find(id)
+        if todo is None:
+            raise NotFoundError(f"todo {id} not found")
+        if todo.owner_id != request.user.user_id:
+            raise ForbiddenError("not your todo")
+        self.db.todos.remove(todo)
+        return self.no_content()
+```
+
+Exceções disponíveis em `spry.errors`:
+
+| Exceção | Status | Tipo de erro |
+| --- | --- | --- |
+| `BadRequestError` | 400 | entrada malformada |
+| `UnauthorizedError` | 401 | sem credencial válida |
+| `ForbiddenError` | 403 | sem permissão |
+| `NotFoundError` | 404 | recurso inexistente |
+| `ConflictError` | 409 | conflito de estado |
+| `UnprocessableEntityError` | 422 | validação semântica |
+
+A validação automática do `bind_payload` continua retornando `422` com a lista de erros por campo — `UnprocessableEntityError` é para você sinalizar violações semânticas depois do binding.
+
+## JWT with HS256 / HS384 / HS512
+
+`JwtAuthService` aceita qualquer HMAC-SHA do OpenAPI suite:
+
+```python
+builder.add_jwt_auth(secret_key=SECRET, algorithm="HS384", ttl=3600)
+```
+
+Algoritmos suportados hoje: `HS256`, `HS384`, `HS512`. `RS256`/`ES256` exigem a extra opcional `cryptography` e ainda não foram integrados.
+
+## OpenAPI security schemes
+
+Ao registrar `add_auth` (cookie) ou `add_jwt_auth` (Bearer), o spec OpenAPI gerado em `/openapi.json` inclui o `securitySchemes` correspondente e marca automaticamente as rotas com `@authorize` como protegidas:
+
+```python
+builder.add_jwt_auth(secret_key=SECRET)        # -> securitySchemes.BearerAuth
+builder.add_auth(secret_key=SECRET)            # -> securitySchemes.CookieAuth (apiKey/cookie)
+
+# schemes customizados:
+builder.add_security_scheme("ApiKeyAuth", {
+    "type": "apiKey",
+    "in": "header",
+    "name": "X-API-Key",
+})
+```
+
+## Async handlers
+
+Handlers podem ser `async def`. A pipeline continua síncrona, mas o ASGI (`uvicorn`, `hypercorn`) despacha o request para uma thread de trabalho via `asyncio.to_thread`, então coroutines funcionam sem erro de event loop:
+
+```python
+@get("/async")
+async def list_async():
+    return await some_async_io()
+```
+
+Isso não é o mesmo que ter uma pipeline inteiramente async — para streaming de responses em ASGI use `spry.StreamingResponse` (veja abaixo).
+
+## Streaming large responses
+
+`StreamingResponse` evita carregar o body inteiro em memória. Útil para servir arquivos grandes ou gerar dados sob demanda:
+
+```python
+from spry import StreamingResponse
+
+@get("/export.csv")
+def export(request):
+    def chunks(block_size: int = 64 * 1024):
+        with open("big.csv", "rb") as fp:
+            while True:
+                buf = fp.read(block_size)
+                if not buf:
+                    return
+                yield buf
+    return StreamingResponse(chunks, headers={"Content-Type": "text/csv"})
+```
+
+O `add_static_files` do builder já usa isso automaticamente para arquivos acima de 256 KB. O `If-None-Match` é honrado — clientes que mandam o ETag recebem `304 Not Modified` sem o body.
 
 ## Creating a project
 
