@@ -5,6 +5,7 @@ import hmac
 import json
 import logging
 import secrets
+import threading
 import time
 from dataclasses import dataclass
 from typing import Any, Callable, Iterable
@@ -75,15 +76,17 @@ class LoginTracker:
         self.max_attempts = max_attempts
         self.lockout_seconds = lockout_minutes * 60
         self._attempts: dict[str, list[float]] = {}
+        self._lock = threading.Lock()
 
     def record_failure(self, identifier: str) -> int:
         now = time.time()
         cutoff = now - self.lockout_seconds
-        if identifier not in self._attempts:
-            self._attempts[identifier] = []
-        self._attempts[identifier] = [t for t in self._attempts[identifier] if t > cutoff]
-        self._attempts[identifier].append(now)
-        attempts = len(self._attempts[identifier])
+        with self._lock:
+            if identifier not in self._attempts:
+                self._attempts[identifier] = []
+            self._attempts[identifier] = [t for t in self._attempts[identifier] if t > cutoff]
+            self._attempts[identifier].append(now)
+            attempts = len(self._attempts[identifier])
         if attempts >= self.max_attempts:
             logger.warning("Account locked due to failed attempts: %s (%d/%d)", identifier, attempts, self.max_attempts)
         return attempts
@@ -91,27 +94,31 @@ class LoginTracker:
     def is_locked(self, identifier: str) -> bool:
         now = time.time()
         cutoff = now - self.lockout_seconds
-        attempts = [t for t in self._attempts.get(identifier, []) if t > cutoff]
-        return len(attempts) >= self.max_attempts
+        with self._lock:
+            attempts = [t for t in self._attempts.get(identifier, []) if t > cutoff]
+            return len(attempts) >= self.max_attempts
 
     def remaining_attempts(self, identifier: str) -> int:
         now = time.time()
         cutoff = now - self.lockout_seconds
-        attempts = len([t for t in self._attempts.get(identifier, []) if t > cutoff])
+        with self._lock:
+            attempts = len([t for t in self._attempts.get(identifier, []) if t > cutoff])
         return max(0, self.max_attempts - attempts)
 
     def lockout_remaining_seconds(self, identifier: str) -> int:
         now = time.time()
         cutoff = now - self.lockout_seconds
-        attempts = [t for t in self._attempts.get(identifier, []) if t > cutoff]
-        if len(attempts) < self.max_attempts:
-            return 0
-        earliest = attempts[0]
+        with self._lock:
+            attempts = [t for t in self._attempts.get(identifier, []) if t > cutoff]
+            if len(attempts) < self.max_attempts:
+                return 0
+            earliest = attempts[0]
         remaining = int(self.lockout_seconds - (now - earliest))
         return max(0, remaining)
 
     def reset(self, identifier: str) -> None:
-        self._attempts.pop(identifier, None)
+        with self._lock:
+            self._attempts.pop(identifier, None)
 
 
 class CookieAuthService:

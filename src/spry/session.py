@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 import secrets
+import threading
 import time
 from typing import Any
 
@@ -18,34 +19,46 @@ class SessionStore:
         self._last_access: dict[str, float] = {}
         self._ttl = ttl
         self._idle_timeout = idle_timeout
+        self._lock = threading.Lock()
 
     def get(self, sid: str) -> dict[str, Any] | None:
         now = time.time()
-        if sid in self._expires and now > self._expires[sid]:
-            self.delete(sid)
-            return None
-        if sid in self._last_access and self._idle_timeout is not None:
-            if now - self._last_access[sid] > self._idle_timeout:
-                logger.info("Session expired due to idle timeout: %s", sid[:8])
-                self.delete(sid)
+        with self._lock:
+            if sid in self._expires and now > self._expires[sid]:
+                self._delete_unlocked(sid)
                 return None
-        return self._data.get(sid)
+            if sid in self._last_access and self._idle_timeout is not None:
+                if now - self._last_access[sid] > self._idle_timeout:
+                    logger.info("Session expired due to idle timeout: %s", sid[:8])
+                    self._delete_unlocked(sid)
+                    return None
+            return self._data.get(sid)
 
     def set(self, sid: str, data: dict[str, Any]) -> None:
         now = time.time()
-        self._data[sid] = data
-        self._expires[sid] = now + self._ttl
-        self._last_access[sid] = now
+        with self._lock:
+            self._data[sid] = data
+            self._expires[sid] = now + self._ttl
+            self._last_access[sid] = now
 
     def delete(self, sid: str) -> None:
+        with self._lock:
+            self._delete_unlocked(sid)
+
+    def _delete_unlocked(self, sid: str) -> None:
         self._data.pop(sid, None)
         self._expires.pop(sid, None)
         self._last_access.pop(sid, None)
 
     def touch(self, sid: str) -> None:
         now = time.time()
-        if sid in self._data:
-            self._last_access[sid] = now
+        with self._lock:
+            if sid in self._data:
+                self._last_access[sid] = now
+
+    def exists(self, sid: str) -> bool:
+        with self._lock:
+            return sid in self._data
 
 
 class SignedSessionStore(SessionStore):
@@ -87,7 +100,7 @@ class SessionMiddleware:
             else:
                 sid = raw_sid
 
-        session_exists = sid is not None and sid in self._store._data
+        session_exists = sid is not None and self._store.exists(sid)
 
         if not session_exists:
             sid = secrets.token_urlsafe(32)

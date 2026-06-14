@@ -287,6 +287,19 @@ class DbSet(Generic[TEntity]):
         style = self.context.backend.param_style
         return sql.replace("?", style) if style != "?" else sql
 
+    def _valid_fields(self) -> set[str]:
+        return {f.name for f in self.model.fields}
+
+    def _validate_fields(self, *names: str) -> None:
+        valid = self._valid_fields()
+        for name in names:
+            clean = name.lstrip("-")
+            if clean not in valid:
+                raise ValueError(
+                    f"'{clean}' is not a valid field on {self.model.entity_type.__name__}. "
+                    f"Valid fields: {', '.join(sorted(valid))}"
+                )
+
     def all(self) -> list[TEntity]:
         b = self.context.backend
         cursor = self.context.connection.execute(f"SELECT * FROM {self._qt()}")
@@ -388,6 +401,7 @@ class DbSet(Generic[TEntity]):
     def order_by(self, *fields: str) -> list[TEntity]:
         if not fields:
             return self.all()
+        self._validate_fields(*fields)
         clauses: list[str] = []
         for f in fields:
             f = f.strip()
@@ -415,15 +429,19 @@ class DbSet(Generic[TEntity]):
         return [self._hydrate(row) for row in b.fetchall_dicts(cursor)]
 
     def sum(self, field: str) -> int | float | None:
+        self._validate_fields(field)
         return self._aggregate(f"SUM({self._q(field)})")
 
     def avg(self, field: str) -> float | None:
+        self._validate_fields(field)
         return self._aggregate(f"AVG({self._q(field)})")
 
     def min(self, field: str) -> Any:
+        self._validate_fields(field)
         return self._aggregate(f"MIN({self._q(field)})")
 
     def max(self, field: str) -> Any:
+        self._validate_fields(field)
         return self._aggregate(f"MAX({self._q(field)})")
 
     def _aggregate(self, expr: str) -> Any:
@@ -452,6 +470,7 @@ class DbSet(Generic[TEntity]):
     def _build_where(self, filters: dict[str, Any]) -> tuple[str, list[Any]]:
         if not filters:
             return "", []
+        self._validate_fields(*filters.keys())
         clauses = [f"{self._q(name)} = ?" for name in filters]
         values = [_to_db_value(value) for value in filters.values()]
         where_clause = f" WHERE {' AND '.join(clauses)}"

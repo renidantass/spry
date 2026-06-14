@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import inspect
+import logging
 from dataclasses import dataclass, field, fields, is_dataclass
 from datetime import date, datetime
 from typing import Any, get_args, get_origin, get_type_hints
 
 from spry.http import Response
 from spry.routing import RouteDefinition
+
+logger = logging.getLogger("spry.openapi")
 
 
 SWAGGER_UI_HTML = """<!DOCTYPE html>
@@ -115,6 +118,7 @@ class OpenApiBuilder:
             hints = get_type_hints(handler)
         except Exception:
             hints = {}
+            logger.debug("Failed to resolve type hints in _extract_parameters", exc_info=True)
 
         for name, param in sig.parameters.items():
             if name == "self" or name == "request":
@@ -145,6 +149,7 @@ class OpenApiBuilder:
             hints = get_type_hints(handler)
         except Exception:
             hints = {}
+            logger.debug("Failed to resolve type hints in _extract_request_body", exc_info=True)
 
         for name, param in sig.parameters.items():
             if name == "self" or name == "request":
@@ -198,7 +203,8 @@ class OpenApiBuilder:
         try:
             type_hints = get_type_hints(model_type)
         except Exception:
-            pass
+            type_hints = {}
+            logger.debug("Failed to resolve type hints for dataclass %s", model_type, exc_info=True)
 
         for f in fields(model_type):
             annotation = type_hints.get(f.name, f.type)

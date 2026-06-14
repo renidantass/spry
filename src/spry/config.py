@@ -82,8 +82,8 @@ def _try_load_dotenv(base_dir: Path) -> None:
                 value = value[1:-1]
             if key not in os.environ:
                 os.environ[key] = value
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug("Failed to load .env file: %s", exc)
 
 
 def _env_to_dict(prefix: str) -> dict[str, Any]:

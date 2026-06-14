@@ -30,8 +30,8 @@ class I18nService:
                 with mo_path.open("rb") as f:
                     self._translations[locale] = gettext.GNUTranslations(f)
                 return self._translations[locale]
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.debug("Failed to load .mo file for locale '%s': %s", locale, exc)
         po_path = self._locale_dir / locale / "LC_MESSAGES" / "messages.po"
         if po_path.exists():
             try:

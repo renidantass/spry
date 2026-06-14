@@ -68,7 +68,12 @@ class IntegrationTests(unittest.TestCase):
         self.assertIn("Access-Control-Allow-Origin", resp.headers)
         self.assertIn("Content-Security-Policy", resp.headers)
 
-        resp = client.post("/data", json={"hello": "world"}, headers={"Content-Type": "application/json"})
+        csrf_token = resp.cookies.get("test_csrf", "")
+        resp = client.post(
+            "/data", json={"hello": "world"},
+            headers={"Content-Type": "application/json", "X-CSRF-Token": csrf_token},
+            cookies={"test_csrf": csrf_token},
+        )
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json(), {"received": {"hello": "world"}})
 

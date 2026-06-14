@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import threading
 import time
 from collections import defaultdict
 from typing import Any
@@ -12,6 +13,7 @@ class TokenBucket:
         self.max_requests = max_requests
         self.window = window
         self._buckets: dict[str, list[float]] = defaultdict(list)
+        self._lock = threading.Lock()
 
     def _cleanup(self, key: str) -> None:
         now = time.time()
@@ -19,21 +21,24 @@ class TokenBucket:
         self._buckets[key] = [t for t in self._buckets[key] if t > cutoff]
 
     def is_allowed(self, key: str) -> bool:
-        self._cleanup(key)
-        if len(self._buckets[key]) >= self.max_requests:
-            return False
-        self._buckets[key].append(time.time())
-        return True
+        with self._lock:
+            self._cleanup(key)
+            if len(self._buckets[key]) >= self.max_requests:
+                return False
+            self._buckets[key].append(time.time())
+            return True
 
     def remaining(self, key: str) -> int:
-        self._cleanup(key)
-        return max(0, self.max_requests - len(self._buckets[key]))
+        with self._lock:
+            self._cleanup(key)
+            return max(0, self.max_requests - len(self._buckets[key]))
 
     def reset_time(self, key: str) -> float:
-        self._cleanup(key)
-        if self._buckets[key]:
-            return self._buckets[key][0] + self.window
-        return time.time() + self.window
+        with self._lock:
+            self._cleanup(key)
+            if self._buckets[key]:
+                return self._buckets[key][0] + self.window
+            return time.time() + self.window
 
 
 InMemoryStore = TokenBucket

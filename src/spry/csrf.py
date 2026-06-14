@@ -31,8 +31,7 @@ class CsrfService:
             return True
         cookie_token = request.cookies.get(self.cookie_name)
         if not cookie_token:
-            return True
-
+            return False
         form_token = request.form().get(self.field_name)
         header_token = self._get_header(request, "X-CSRF-Token") or self._get_header(request, "X-XSRF-Token")
         token = form_token or header_token
