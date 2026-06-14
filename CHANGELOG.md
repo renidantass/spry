@@ -40,6 +40,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 [0.1.0]: https://github.com/renidantass/spry/releases/tag/v0.1.0
 
+## v0.6.0 (2026-06-14)
+
+### Feat
+
+- typed exceptions, OpenAPI security, streaming, async ASGI, HS384/HS512
+
+### Fix
+
+- CI failures, add uptime_seconds, InMemoryStore, save_changes aliases
+
+### Refactor
+
+- split monolithic app.py, orm.py, views.py into subpackages
+
 ## v0.5.2 (2026-06-14)
 
 ### Refactor
