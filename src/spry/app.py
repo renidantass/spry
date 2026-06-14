@@ -32,7 +32,7 @@ from spry.views import ViewRenderer
 
 logger = logging.getLogger("spry")
 
-_VERSION = "0.1.0"
+_VERSION = "0.1.1"
 _START_TIME: float = 0.0
 
 
@@ -260,7 +260,7 @@ class AppBuilder:
         self._auto_discovery_ran = False
         self._openapi_enabled = True
         self._openapi_title = "Spry API"
-        self._openapi_version = "0.1.0"
+        self._openapi_version = "0.1.1"
         self._openapi_description = ""
         self._debug: bool | None = None
         self._max_body_size: int | None = None
