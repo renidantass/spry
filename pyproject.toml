@@ -22,7 +22,7 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
     "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
     "Topic :: Software Development :: Libraries :: Application Frameworks",
-    "Framework :: Spry",
+    
 ]
 dependencies = []
 
@@ -52,5 +52,6 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 spry = ["templates/**/*"]
+
 
 
