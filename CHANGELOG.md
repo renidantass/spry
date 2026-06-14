@@ -40,6 +40,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 [0.1.0]: https://github.com/renidantass/spry/releases/tag/v0.1.0
 
+## v0.2.4 (2026-06-14)
+
+### Fix
+
+- Phase 3 resilience — memory leaks, i18n crash, cookie expiration, ReDoS, LOW items
+
 ## v0.2.3 (2026-06-14)
 
 ### Fix
