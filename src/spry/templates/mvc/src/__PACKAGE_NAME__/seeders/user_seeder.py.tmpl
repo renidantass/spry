@@ -1,0 +1,25 @@
+from spry import PasswordHasher
+
+from __PACKAGE_NAME__.data import AppDbContext
+from __PACKAGE_NAME__.models import User
+
+
+def seed(db: AppDbContext) -> None:
+    if db.users.count() > 0:
+        return
+
+    hasher = PasswordHasher()
+    pwd = "__DEFAULT_PASSWORD__"
+
+    db.users.add(User(
+        username="admin",
+        display_name="Administrator",
+        password_hash=hasher.hash_password(pwd),
+        roles="admin,member",
+    ))
+    db.users.add(User(
+        username="demo",
+        display_name="Demo User",
+        password_hash=hasher.hash_password(pwd),
+        roles="member",
+    ))

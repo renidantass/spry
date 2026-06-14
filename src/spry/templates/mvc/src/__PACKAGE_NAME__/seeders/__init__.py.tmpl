@@ -1,0 +1,8 @@
+from __PACKAGE_NAME__.data import AppDbContext
+from __PACKAGE_NAME__.seeders.todo_seeder import seed as seed_todos
+from __PACKAGE_NAME__.seeders.user_seeder import seed as seed_users
+
+
+def seed(db: AppDbContext) -> None:
+    seed_users(db)
+    seed_todos(db)

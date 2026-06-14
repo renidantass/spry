@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from spry import DbContext, dbset, key, validate
-from spry.validators import Required, MinLength
+from spry import key, validate
+from spry.validators import MinLength, Required
 
 
 @dataclass(slots=True)
@@ -14,7 +14,3 @@ class Todo:
 @dataclass(slots=True)
 class CreateTodo:
     title: str = validate(Required(), MinLength(3))
-
-
-class AppDbContext(DbContext):
-    todos = dbset(Todo)

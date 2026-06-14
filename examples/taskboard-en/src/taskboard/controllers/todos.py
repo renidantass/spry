@@ -1,6 +1,7 @@
 from spry import ControllerBase, controller, delete, get, post, put
 
-from taskboard.models import AppDbContext, CreateTodo, Todo
+from taskboard.data import AppDbContext
+from taskboard.models import CreateTodo, Todo
 
 
 @controller("/todos")
@@ -15,7 +16,7 @@ class TodosController(ControllerBase):
     @get("/{id}")
     def get_by_id(self, id: int):
         todo = self.db.todos.find(id)
-        return todo if todo is not None else self.not_found("Todo nao encontrado")
+        return todo if todo is not None else self.not_found("Todo not found")
 
     @post("/")
     def create(self, todo: CreateTodo):
@@ -28,7 +29,7 @@ class TodosController(ControllerBase):
     def update(self, id: int, todo: CreateTodo):
         entity = self.db.todos.find(id)
         if entity is None:
-            return self.not_found("Todo nao encontrado")
+            return self.not_found("Todo not found")
         entity.title = todo.title
         self.db.todos.update(entity)
         self.db.save_changes()
@@ -38,7 +39,7 @@ class TodosController(ControllerBase):
     def remove(self, id: int):
         entity = self.db.todos.find(id)
         if entity is None:
-            return self.not_found("Todo nao encontrado")
+            return self.not_found("Todo not found")
         self.db.todos.remove(id)
         self.db.save_changes()
         return self.no_content()

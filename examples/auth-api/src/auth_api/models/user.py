@@ -1,16 +1,16 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
-from spry import DbContext, dbset, key, validate
+from spry import key, validate
 from spry.validators import Email, MinLength, Required
 
 
 @dataclass(slots=True)
 class User:
     id: int | None = key()
-    username: str = \"\"
-    email: str = \"\"
-    password_hash: str = \"\"
-    role: str = \"user\"
+    username: str = ""
+    email: str = ""
+    password_hash: str = ""
+    role: str = "user"
 
 
 @dataclass(slots=True)
@@ -24,7 +24,3 @@ class RegisterRequest:
 class LoginRequest:
     username: str = validate(Required())
     password: str = validate(Required())
-
-
-class AppDbContext(DbContext):
-    users = dbset(User)

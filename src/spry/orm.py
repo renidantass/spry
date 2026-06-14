@@ -174,6 +174,19 @@ class ModelMetadata(Generic[TEntity]):
 
 
 class DbContext:
+    __models__: list[type[Any]] | None = None
+
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        super().__init_subclass__(**kwargs)
+        models = getattr(cls, "__models__", None)
+        if models is not None:
+            for entity_type in models:
+                name = _to_table_name(entity_type.__name__)
+                if name not in vars(cls):
+                    definition = DbSetDefinition(entity_type)
+                    definition.__set_name__(cls, name)
+                    setattr(cls, name, definition)
+
     def __init__(self, database_url: str = "app.db", *, pool_size: int | None = None) -> None:
         self.database_url = database_url
         parsed = parse_database_url(database_url)

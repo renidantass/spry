@@ -1,8 +1,7 @@
-from spry import DbContext, dbset
+from spry import DbContext
 
 from __PACKAGE_NAME__.models import Todo, User
 
 
 class AppDbContext(DbContext):
-    todos = dbset(Todo)
-    users = dbset(User)
+    __models__ = [Todo, User]

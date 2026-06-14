@@ -1,6 +1,6 @@
 from spry import DbContext
 
-from __PACKAGE_NAME__.models import Todo
+from taskboard.models import Todo
 
 
 class AppDbContext(DbContext):
