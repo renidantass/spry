@@ -1,6 +1,6 @@
 from spry import PasswordHasher, Request, authorize, controller, get, post
 
-from auth_api.data import AppDbContext, LoginRequest, RegisterRequest, User
+from auth_api.models import AppDbContext, LoginRequest, RegisterRequest, User
 
 
 @controller(\"/auth\")

@@ -1,6 +1,6 @@
 from spry import ControllerBase, controller, delete, get, post, put
 
-from taskboard.data import AppDbContext, CreateTodo, Todo
+from taskboard.models import AppDbContext, CreateTodo, Todo
 
 
 @controller(\"/todos\")

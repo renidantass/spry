@@ -10,9 +10,11 @@
   </div>
   <div class="todo-card__actions">
     <form action="/todos/{{ id }}/toggle" method="post">
+      {{ csrf_input }}
       <button class="button button--secondary" type="submit">{{ toggle_label }}</button>
     </form>
     <form action="/todos/{{ id }}/delete" method="post">
+      {{ csrf_input }}
       <button class="button button--ghost" type="submit">Excluir</button>
     </form>
   </div>

@@ -1,6 +1,6 @@
 from spry import DbContext
 
-from taskboard.data import Todo
+from taskboard.models import Todo
 
 
 def seed(db: DbContext):

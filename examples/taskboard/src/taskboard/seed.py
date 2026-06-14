@@ -1,4 +1,4 @@
-from taskboard.data import AppDbContext, Todo
+from taskboard.models import AppDbContext, Todo
 
 
 def seed(db: AppDbContext) -> None:

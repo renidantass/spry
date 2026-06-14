@@ -1,6 +1,6 @@
 from spry import DbContext, PasswordHasher
 
-from auth_api.data import User
+from auth_api.models import User
 
 
 def seed(db: DbContext):

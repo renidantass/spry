@@ -59,7 +59,13 @@ class Controller(ControllerBase):
         layout: str | None = None,
         status_code: int = 200,
     ) -> Response:
-        markup = self._view_renderer.render(view_name, model, layout=layout)
+        full_model = dict(model or {})
+        if "csrf_input" not in full_model and hasattr(self, 'request'):
+            token = self.request.items.get("csrf_token", "")
+            field_name = self.request.items.get("csrf_field_name", "__csrf")
+            if token:
+                full_model["csrf_input"] = HtmlString(f'<input type="hidden" name="{field_name}" value="{token}" />')
+        markup = self._view_renderer.render(view_name, full_model, layout=layout)
         return self.html(markup, status_code=status_code)
 
     def partial_view(self, view_name: str, model: Mapping[str, Any] | None = None) -> HtmlString:

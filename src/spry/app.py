@@ -209,6 +209,7 @@ class Application:
         target = route.function_handler
         if route.controller_type is not None:
             controller = scope.resolve(route.controller_type)
+            controller.request = request
             target = getattr(controller, route.handler_name or "")
         if target is None:
             raise RuntimeError("Route handler not found")

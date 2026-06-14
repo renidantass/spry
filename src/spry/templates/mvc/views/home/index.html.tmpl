@@ -9,6 +9,7 @@
       <span class="badge badge--outline">{{ user_name }}</span>
       <span class="badge">Template MVC</span>
       <form action="/logout" method="post">
+        {{ csrf_input }}
         <button class="button button--ghost" type="submit">Sair</button>
       </form>
     </div>
@@ -62,6 +63,7 @@
           </div>
         </div>
         <form class="form-stack" action="/todos" method="post">
+          {{ csrf_input }}
           <label class="field">
             <span>Titulo</span>
             <input class="input" type="text" name="title" placeholder="Ex.: Publicar primeira versao" required />

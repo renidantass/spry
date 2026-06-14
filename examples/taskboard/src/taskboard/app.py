@@ -1,6 +1,6 @@
 from spry import AppBuilder
 
-from taskboard.data import AppDbContext
+from taskboard.models import AppDbContext
 
 
 def create_app():
