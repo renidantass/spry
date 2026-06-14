@@ -40,6 +40,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 [0.1.0]: https://github.com/renidantass/spry/releases/tag/v0.1.0
 
+## v0.3.0 (2026-06-14)
+
+### Feat
+
+- docs site polish — playground syntax highlight, 404 page, broken link fixes
+
 ## v0.2.5 (2026-06-14)
 
 ### Fix
