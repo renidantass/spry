@@ -24,6 +24,24 @@ def _print_version_and_exit() -> None:
     sys.exit(0)
 
 
+def _guess_app_path() -> str | None:
+    cwd = Path.cwd()
+    src = cwd / "src"
+    for base in (cwd, src):
+        if (base / "app.py").exists():
+            package = base.name
+            return f"{package}.app:create_app"
+        if (base / "main.py").exists():
+            return "main:app"
+    return None
+
+
+def _install_hint(package: str) -> str:
+    extras = {"gunicorn": "gunicorn", "waitress": "waitress", "uvicorn": "uvicorn"}
+    pip_name = extras.get(package, package)
+    return f"pip install {pip_name}"
+
+
 def main() -> None:
     if "--version" in sys.argv:
         _print_version_and_exit()
@@ -36,20 +54,20 @@ def main() -> None:
     new_parser.add_argument("--output", help="Output directory")
     new_parser.add_argument("--template", default="api", choices=["api", "mvc"], help="Project template")
     new_parser.add_argument("--orm", default="sqlite", choices=["sqlite", "postgres", "mysql", "mssql"], help="Database ORM")
-    new_parser.add_argument("--auth", default="none", choices=["none", "cookie", "jwt"], help="Authentication method")
-    new_parser.add_argument("--deploy", action="store_true", help="Generate Dockerfile, docker-compose and CI workflow")
 
     run_parser = subparsers.add_parser("run", help="Run a Spry application")
-    run_parser.add_argument("--app", required=True, help="App factory path in module:callable format")
+    run_parser.add_argument("--app", help="App factory path in module:callable format")
     run_parser.add_argument("--host", default="127.0.0.1", help="Bind host")
     run_parser.add_argument("--port", type=int, default=8000, help="Bind port")
     run_parser.add_argument("--server", default="wsgiref", choices=["wsgiref", "gunicorn", "waitress", "uvicorn"], help="Production server")
+    run_parser.add_argument("--reload", action="store_true", help="Restart on file changes (same as `spry watch`)")
 
     watch_parser = subparsers.add_parser("watch", help="Restart app on Python file changes")
-    watch_parser.add_argument("--app", required=True, help="App factory path in module:callable format")
+    watch_parser.add_argument("--app", help="App factory path in module:callable format")
     watch_parser.add_argument("--host", default="127.0.0.1", help="Bind host")
     watch_parser.add_argument("--port", type=int, default=8000, help="Bind port")
     watch_parser.add_argument("--path", action="append", dest="paths", help="Additional paths to watch")
+    watch_parser.add_argument("--interval", type=float, default=1.0, help="Polling interval in seconds")
 
     seed_parser = subparsers.add_parser("seed", help="Run a database seed entrypoint")
     seed_parser.add_argument("--entry", required=True, help="Seed callable in module:callable format")
@@ -85,17 +103,40 @@ def main() -> None:
 
     if args.command == "new":
         output = Path(args.output) if args.output else Path.cwd() / args.name
-        destination = scaffold_project(args.name, output, template_name=args.template, orm=args.orm, auth=args.auth)
+        destination = scaffold_project(args.name, output, template_name=args.template, orm=args.orm, auth="none")
         logger.info("Created project at %s", destination)
+        print()
+        print("  Next steps:")
+        print(f"    cd {args.name}")
+        print(f"    pip install spry-core")
+        if args.orm != "sqlite":
+            print(f"    pip install spry-core[{args.orm}]")
+        print(f"    spry migrate add initial --context {args.name}.data:AppDbContext")
+        print(f"    spry migrate apply --database {args.name}.db")
+        print(f"    spry run --app {args.name}.app:create_app")
+        print()
         return
 
+    app_path = args.app or _guess_app_path()
+    if not app_path and args.command in ("run", "watch", "routes"):
+        guess = _guess_app_path()
+        hint = f" (e.g. {guess})" if guess else ""
+        parser.error(f"the --app argument is required{hint}")
+
     if args.command == "run":
-        _prepare_import_paths(args.app)
-        app = _load_application(args.app)
+        if args.reload:
+            _watch_application(app_path, args.host, args.port, [], interval=args.interval)
+            return
+        _prepare_import_paths(app_path)
+        app = _load_application(app_path)
         if args.server == "wsgiref":
             app.run(host=args.host, port=args.port)
         elif args.server == "gunicorn":
-            import gunicorn.app.base
+            try:
+                import gunicorn.app.base
+            except ImportError:
+                logger.error("Gunicorn is not installed. Run: %s", _install_hint("gunicorn"))
+                sys.exit(1)
             class GunicornApp(gunicorn.app.base.BaseApplication):
                 def __init__(self, app, host, port):
                     self._app = app
@@ -109,15 +150,23 @@ def main() -> None:
                     return self._app
             GunicornApp(app, args.host, args.port).run()
         elif args.server == "waitress":
-            from waitress import serve
+            try:
+                from waitress import serve
+            except ImportError:
+                logger.error("Waitress is not installed. Run: %s", _install_hint("waitress"))
+                sys.exit(1)
             serve(app, host=args.host, port=args.port)
         elif args.server == "uvicorn":
-            import uvicorn
+            try:
+                import uvicorn
+            except ImportError:
+                logger.error("Uvicorn is not installed. Run: %s", _install_hint("uvicorn"))
+                sys.exit(1)
             uvicorn.run(app, host=args.host, port=args.port)
         return
 
     if args.command == "watch":
-        _watch_application(args.app, args.host, args.port, args.paths or [])
+        _watch_application(app_path, args.host, args.port, args.paths or [], interval=args.interval)
         return
 
     if args.command == "seed":
@@ -155,8 +204,8 @@ def main() -> None:
             logger.info("No migrations to rollback")
 
     if args.command == "routes":
-        _prepare_import_paths(args.app)
-        app = _load_application(args.app)
+        _prepare_import_paths(app_path)
+        app = _load_application(app_path)
         print(f"{'Method':<8} {'Path':<40} {'Handler'}")
         print("-" * 80)
         for route in app.routes:
@@ -182,9 +231,23 @@ def _prepare_import_paths(import_path: str | None = None) -> None:
 def _load_symbol(import_path: str) -> Any:
     module_name, separator, symbol_name = import_path.partition(":")
     if not separator:
-        raise ValueError("Context path must use module:Class format")
-    module = importlib.import_module(module_name)
-    return getattr(module, symbol_name)
+        raise ValueError(
+            f"Invalid import path: '{import_path}'. Expected format: module:Symbol (e.g. myapp.app:create_app)"
+        )
+    try:
+        module = importlib.import_module(module_name)
+    except ModuleNotFoundError as exc:
+        raise ModuleNotFoundError(
+            f"Module '{module_name}' not found. Make sure PYTHONPATH includes your project's src/ directory "
+            f"and the module exists. Error: {exc}"
+        ) from exc
+    try:
+        return getattr(module, symbol_name)
+    except AttributeError as exc:
+        raise AttributeError(
+            f"Symbol '{symbol_name}' not found in module '{module_name}'. "
+            f"Available symbols: {[n for n in dir(module) if not n.startswith('_')][:20]}"
+        ) from exc
 
 
 def _load_application(import_path: str) -> Application:
@@ -195,7 +258,7 @@ def _load_application(import_path: str) -> Application:
     return app
 
 
-def _watch_application(app_path: str, host: str, port: int, extra_paths: list[str]) -> None:
+def _watch_application(app_path: str, host: str, port: int, extra_paths: list[str], interval: float = 1.0) -> None:
     _prepare_import_paths(app_path)
     watched_paths = [
         Path.cwd(),
@@ -208,7 +271,7 @@ def _watch_application(app_path: str, host: str, port: int, extra_paths: list[st
 
     try:
         while True:
-            time.sleep(1)
+            time.sleep(interval)
             current = _collect_mtimes(watched_paths)
             if current == fingerprints:
                 if process.poll() is None:

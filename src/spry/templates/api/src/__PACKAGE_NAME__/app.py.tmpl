@@ -6,6 +6,7 @@ from __PACKAGE_NAME__.data import AppDbContext
 def create_app():
     builder = AppBuilder()
     builder.add_db_context(AppDbContext)
+    builder.discover_controllers("__PACKAGE_NAME__")
     app = builder.build()
 
     scope = app.create_scope()

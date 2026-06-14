@@ -6,6 +6,7 @@ from taskboard.data import AppDbContext
 def create_app():
     builder = AppBuilder()
     builder.add_db_context(AppDbContext)
+    builder.discover_controllers("taskboard")
     app = builder.build()
 
     scope = app.create_scope()

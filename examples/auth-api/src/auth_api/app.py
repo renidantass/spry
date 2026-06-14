@@ -15,8 +15,9 @@ def create_app():
     builder = AppBuilder()
     builder.use(cors_dev)
     builder.add_db_context(AppDbContext)
-    builder.add_jwt_auth(secret_key=\"change-me-in-production\")
+    builder.add_jwt_auth(secret_key="change-me-in-production")
     builder.add_rate_limiter(max_requests=60, window=60)
+    builder.discover_controllers("auth_api")
 
     app = builder.build()
 

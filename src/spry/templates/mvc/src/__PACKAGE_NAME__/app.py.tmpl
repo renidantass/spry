@@ -16,6 +16,7 @@ def create_app():
     builder.add_auth()
     builder.add_csrf()
     builder.add_db_context(AppDbContext)
+    builder.discover_controllers("__PACKAGE_NAME__")
     app = builder.build()
 
     scope = app.create_scope()
