@@ -1,4 +1,4 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -24,6 +24,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Background tasks, event dispatcher
 - Health check endpoint (/health)
 - Config: .env support, multi-environment appsettings
+
+### Documentation
+
+- Added English README (README_EN.md)
+- Added English documentation pages: index, getting-started, architecture, api-development, mvc-development, orm-data, auth-security, testing, tooling-cli, deployment, troubleshooting
+- Added English taskboard example (examples/taskboard-en)
+- Added auth-api example with JWT authentication (examples/auth-api)
+- Updated pyproject.toml with PyPI metadata (license, authors, classifiers, keywords, urls)
+- Added GitHub Actions workflow for PyPI publishing
 
 ### Changed
 

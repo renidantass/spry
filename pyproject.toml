@@ -8,7 +8,29 @@ version = "0.1.0"
 description = "Opinionated Python web framework with an EF Core-inspired ORM"
 readme = "README.md"
 requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [{name = "Reni Dantas", email = "reni@spry.dev"}]
+keywords = ["web", "framework", "orm", "api", "mvc", "wsgi", "asgi", "aspnet-core-inspired", "python-web"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Framework :: Spry",
+]
 dependencies = []
+
+[project.urls]
+Homepage = "https://spry.dev"
+Repository = "https://github.com/anomalyco/spry"
+Documentation = "https://spry.dev/docs"
+Changelog = "https://github.com/anomalyco/spry/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 postgres = ["psycopg2-binary"]
@@ -30,3 +52,5 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 spry = ["templates/**/*"]
+
+
