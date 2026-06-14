@@ -1,4 +1,5 @@
-from spry import DbContext, PasswordHasher
+from spry.auth import PasswordHasher
+from spry.orm import DbContext
 
 from auth_api.models import User
 

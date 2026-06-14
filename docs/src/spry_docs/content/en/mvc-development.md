@@ -10,7 +10,8 @@ tags: mvc, views, templates, html
 Use `Controller` instead of `ControllerBase` for apps that serve HTML:
 
 ```python
-from spry import Controller, controller, get
+from spry.controllers import Controller
+from spry.routing import controller, get
 
 @controller("/")
 class HomeController(Controller):

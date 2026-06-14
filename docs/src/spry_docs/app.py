@@ -6,7 +6,8 @@ import os
 from pathlib import Path
 from typing import Any
 
-from spry import AppBuilder, Request, Response
+from spry.app import AppBuilder
+from spry.http import Request, Response
 from spry.routing import create_function_route
 
 from spry_docs.components import Layout
@@ -362,7 +363,9 @@ def create_app() -> Any:
         locale = _detect_locale(request)
         pages = _load_pages(locale)
         code = (
-            'from spry import AppBuilder, ControllerBase, controller, get\n\n'
+            'from spry.app import AppBuilder\n'
+            'from spry.controllers import ControllerBase\n'
+            'from spry.routing import controller, get\n\n'
             '@controller("/hello")\n'
             'class HelloController(ControllerBase):\n'
             '    @get("/")\n'

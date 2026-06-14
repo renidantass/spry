@@ -10,7 +10,8 @@ tags: api, controllers, middleware, validation
 Controllers are classes that group related routes:
 
 ```python
-from spry import ControllerBase, controller, get, post
+from spry.controllers import ControllerBase
+from spry.routing import controller, get, post
 
 @controller("/products")
 class ProductsController(ControllerBase):
@@ -126,7 +127,7 @@ builder.add_jwt_auth(secret_key=os.getenv("JWT_SECRET"))
 Use `@authorize` to protect routes:
 
 ```python
-from spry import authorize
+from spry.auth import authorize
 
 @get("/admin")
 @authorize(roles=["admin"])

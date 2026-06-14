@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
-from spry import key, validate
+from spry.orm import key
+from spry.validation import validate
 from spry.validators import Email, MinLength, Required
 
 

@@ -1,4 +1,5 @@
-from spry import ControllerBase, controller, delete, get, post, put
+from spry.controllers import ControllerBase
+from spry.routing import controller, delete, get, post, put
 
 from __PACKAGE_NAME__.data import AppDbContext
 from __PACKAGE_NAME__.models import CreateTodo, Todo

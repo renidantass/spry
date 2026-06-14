@@ -10,7 +10,7 @@ tags: orm, data, migrations, database
 Spry's ORM is inspired by Entity Framework Core:
 
 ```python
-from spry import DbContext, dbset, key
+from spry.orm import DbContext, dbset, key
 from dataclasses import dataclass
 
 @dataclass(slots=True)
@@ -110,7 +110,7 @@ db.save_changes()
 ## Relationships
 
 ```python
-from spry import foreign_key, navigation, navigation_many
+from spry.orm import foreign_key, navigation, navigation_many
 
 @dataclass
 class Author:

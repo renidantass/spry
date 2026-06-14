@@ -26,7 +26,7 @@ builder.add_auth(secret_key=os.getenv("AUTH_SECRET"))
 Protect routes with `@authorize`:
 
 ```python
-from spry import authorize
+from spry.auth import authorize
 
 @get("/admin")
 @authorize(roles=["admin"])

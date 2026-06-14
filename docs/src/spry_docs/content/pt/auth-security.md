@@ -26,7 +26,7 @@ builder.add_auth(secret_key=os.getenv("AUTH_SECRET"))
 Proteja rotas com `@authorize`:
 
 ```python
-from spry import authorize
+from spry.auth import authorize
 
 @get("/admin")
 @authorize(roles=["admin"])

@@ -1,4 +1,5 @@
-from spry import authorize, controller, get
+from spry.auth import authorize
+from spry.routing import controller, get
 
 from auth_api.data import AppDbContext
 

@@ -1,4 +1,6 @@
-from spry import PasswordHasher, Request, authorize, controller, get, post
+from spry.auth import PasswordHasher, authorize
+from spry.http import Request
+from spry.routing import controller, get, post
 
 from auth_api.data import AppDbContext
 from auth_api.models import LoginRequest, RegisterRequest, User

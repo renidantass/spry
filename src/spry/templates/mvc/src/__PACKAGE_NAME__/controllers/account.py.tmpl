@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from spry import AuthenticatedController, CookieAuthService, HtmlString, PasswordHasher, Request, ViewRenderer, authorize, controller, get, post
+from spry.auth import CookieAuthService, PasswordHasher, authorize
+from spry.controllers import AuthenticatedController
+from spry.http import Request
+from spry.routing import controller, get, post
+from spry.views import HtmlString, ViewRenderer
 
 from __PACKAGE_NAME__.data import AppDbContext
 

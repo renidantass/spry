@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from spry import Controller, HtmlString, Request, ViewRenderer, authorize, controller, get, post, serve_static_file
+from spry.auth import authorize
+from spry.controllers import Controller, serve_static_file
+from spry.http import Request
+from spry.routing import controller, get, post
+from spry.views import HtmlString, ViewRenderer
 
 from __PACKAGE_NAME__.data import AppDbContext
 from __PACKAGE_NAME__.models import Todo

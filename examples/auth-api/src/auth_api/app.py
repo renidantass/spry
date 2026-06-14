@@ -1,4 +1,4 @@
-from spry import AppBuilder
+from spry.app import AppBuilder
 
 from auth_api.data import AppDbContext
 

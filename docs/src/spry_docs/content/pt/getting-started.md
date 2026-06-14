@@ -40,7 +40,10 @@ Acesse `http://127.0.0.1:8000/todos` — sua API já está no ar.
 
 ```python
 from dataclasses import dataclass
-from spry import AppBuilder, ControllerBase, DbContext, controller, dbset, get, key, post
+from spry.app import AppBuilder
+from spry.controllers import ControllerBase
+from spry.orm import DbContext, dbset, key
+from spry.routing import controller, get, post
 
 @dataclass(slots=True)
 class Todo:

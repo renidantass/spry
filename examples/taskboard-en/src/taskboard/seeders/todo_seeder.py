@@ -1,4 +1,4 @@
-from spry import DbContext
+from spry.orm import DbContext
 
 from taskboard.models import Todo
 
