@@ -40,6 +40,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 [0.1.0]: https://github.com/renidantass/spry/releases/tag/v0.1.0
 
+## v0.2.2 (2026-06-14)
+
+### Refactor
+
+- extract TokenSigner, remove stack frame magic and CLI REPL, add tests
+
 ## v0.2.1 (2026-06-14)
 
 ### Fix
