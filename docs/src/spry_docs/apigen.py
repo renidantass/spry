@@ -33,13 +33,13 @@ def load_api_index() -> list[tuple[str, str]]:
     return [(m[1], m[2]) for m in API_MODULES]
 
 
-def generate_api_page(module_path: str) -> str | None:
+def generate_api_page(module_path: str, base_url: str = "") -> str | None:
     if module_path in _MODULE_CACHE:
         return _MODULE_CACHE[module_path]
 
     for pkg, mod, desc in API_MODULES:
         if mod == module_path or f"{pkg}.{mod}" == module_path:
-            page = _generate_for_module(pkg, mod)
+            page = _generate_for_module(pkg, mod, base_url)
             _MODULE_CACHE[module_path] = page
             return page
 
@@ -50,7 +50,7 @@ def generate_api_page(module_path: str) -> str | None:
     return None
 
 
-def _generate_for_module(pkg: str, mod: str) -> str:
+def _generate_for_module(pkg: str, mod: str, base_url: str = "") -> str:
     try:
         module = importlib.import_module(f"{pkg}.{mod}")
     except ImportError:
@@ -58,9 +58,9 @@ def _generate_for_module(pkg: str, mod: str) -> str:
 
     sections: list[str] = [
         f'<nav class="bc">'
-        f'<span class="bc-item"><a href="/">Spry</a></span>'
+        f'<span class="bc-item"><a href="{base_url or "/"}">Spry</a></span>'
         f'<span class="bc-sep">/</span>'
-        f'<span class="bc-item"><a href="/api/">API</a></span>'
+        f'<span class="bc-item"><a href="{base_url}/api/">API</a></span>'
         f'<span class="bc-sep">/</span>'
         f'<span class="bc-item">{mod}</span></nav>'
         f"<h1>{pkg}.{mod}</h1>"

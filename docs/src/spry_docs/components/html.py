@@ -257,9 +257,10 @@ class Diagram:
 
 
 class Playground:
-    def __init__(self, code: str, language: str = "python") -> None:
+    def __init__(self, code: str, language: str = "python", rows: int = 8) -> None:
         self.code = code
         self.language = language
+        self.rows = rows
 
     def render(self) -> str:
         code_escaped = escape(self.code)
@@ -267,10 +268,17 @@ class Playground:
             f'<div class="pg">'
             f'<div class="pg-hd">'
             f'<span class="pg-lang">{self.language}</span>'
-            f'<button class="pg-run" onclick="runPlayground(this)">Run ▶</button>'
+            f'<button class="pg-run" onclick="runPlayground(this)">'
+            f'<span class="pg-spinner"></span> Run ▶</button>'
             f'</div>'
-            f'<textarea class="pg-ed" data-lang="{self.language}" rows="8">{code_escaped}</textarea>'
-            f'<pre class="pg-out" id="pgOutput"></pre>'
+            f'<div class="pg-wrap">'
+            f'<pre class="pg-highlight" aria-hidden="true"><code>{highlight(self.code, self.language)}</code></pre>'
+            f'<textarea class="pg-ed" data-lang="{self.language}" rows="{self.rows}"'
+            f' oninput="highlightPlayground(this)" onscroll="syncPlaygroundScroll(this)">'
+            f'{code_escaped}'
+            f'</textarea>'
+            f'</div>'
+            f'<pre class="pg-out">Click "Run" to execute</pre>'
             f'</div>'
         )
 
@@ -439,11 +447,83 @@ function switchVersion(version) {{
   window.location.href = window.location.pathname + '?v=' + version;
 }}
 
+/* --- Syntax highlighting for playground --- */
+function _escapeHtml(str) {{
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}}
+
+function _highlightPython(code) {{
+  const kw = '\\\\b(def|class|return|if|elif|else|for|while|import|from|as|async|await|with|try|except|finally|raise|pass|None|True|False|in|not|and|or|is|lambda|yield|self|super|print|len|range|type|dict|list|set|str|int|float|bool|tuple|Any|Optional|Union)\\\\b';
+  return code
+    .replace(new RegExp(kw, 'g'), '<span class=tk-kw>$1</span>')
+    .replace(/(?<!["\\w])(\'[^\']*?\')/g, '<span class=tk-str>$1</span>')
+    .replace(/"([^"]*?)"/g, '<span class=tk-str>"$1"</span>')
+    .replace(/(#.*?)$/gm, '<span class=tk-cm>$1</span>')
+    .replace(/@(\\w+)/g, '<span class=tk-dc>@$1</span>')
+    .replace(/\\b(\\d+)\\b/g, '<span class=tk-num>$1</span>');
+}}
+
+function _highlightBash(code) {{
+  const cmds = '\\\\b(spry|python|pip|cd|mkdir|gunicorn|uvicorn|waitress)\\\\b';
+  return code
+    .replace(new RegExp(cmds, 'g'), '<span class=tk-cmd>$1</span>')
+    .replace(/(--[\\w-]+)/g, '<span class=tk-fl>$1</span>')
+    .replace(/(\\$[\\w{{}}]+)/g, '<span class=tk-ev>$1</span>');
+}}
+
+function _highlightJson(code) {{
+  return code
+    .replace(/(&quot;(?:[^&\\\\]|\\\\.)*?&quot;)\\s*:/g, '<span class=tk-key>$1</span>:')
+    .replace(/:\\s*(&quot;(?:[^&\\\\]|\\\\.)*?&quot;)/g, ': <span class=tk-str>$1</span>')
+    .replace(/:\\s*(\\d+\\.?\\d*)/g, ': <span class=tk-num>$1</span>')
+    .replace(/:\\s*(true|false|null)/gi, ': <span class=tk-kw>$1</span>');
+}}
+
+function _highlightHtml(code) {{
+  return code
+    .replace(/(&lt;\\/?)(\\w+)/g, '$1<span class=tk-tag>$2</span>')
+    .replace(/(\\w+)=(&quot;.*?&quot;)/g, '<span class=tk-attr>$1</span>=$2');
+}}
+
+function highlightCode(code, language) {{
+  const escaped = _escapeHtml(code);
+  const lang = language || 'python';
+  if (lang === 'python') return _highlightPython(escaped);
+  if (['bash','sh','shell','powershell'].includes(lang)) return _highlightBash(escaped);
+  if (lang === 'json') return _highlightJson(escaped);
+  if (['html','xml'].includes(lang)) return _highlightHtml(escaped);
+  return escaped;
+}}
+
+function highlightPlayground(textarea) {{
+  const wrap = textarea.closest('.pg-wrap');
+  if (!wrap) return;
+  const pre = wrap.querySelector('.pg-highlight code');
+  if (!pre) return;
+  const lang = textarea.dataset.lang || 'python';
+  pre.innerHTML = highlightCode(textarea.value, lang);
+}}
+
+function syncPlaygroundScroll(textarea) {{
+  const wrap = textarea.closest('.pg-wrap');
+  if (!wrap) return;
+  const pre = wrap.querySelector('.pg-highlight');
+  if (!pre) return;
+  pre.scrollTop = textarea.scrollTop;
+  pre.scrollLeft = textarea.scrollLeft;
+}}
+/* --- End syntax highlighting --- */
+
 async function runPlayground(btn) {{
   const pg = btn.closest('.pg');
   const code = pg.querySelector('.pg-ed').value;
   const output = pg.querySelector('.pg-out');
-  output.textContent = 'Running...';
+  btn.classList.add('is-loading');
+  output.textContent = '';
+  output.classList.remove('is-error');
   try {{
     const res = await fetch('{self.base_url}/api/run', {{
       method: 'POST',
@@ -452,15 +532,19 @@ async function runPlayground(btn) {{
     }});
     const data = await res.json();
     if (data.error) {{
-      output.textContent = 'Error:\\n' + data.error;
+      output.textContent = data.error;
+      output.classList.add('is-error');
     }} else {{
       output.textContent = data.output || '(no output)';
-      if (data.output && data.error) {{
-        output.textContent += '\\n\\nStderr:\\n' + data.error;
+      if (data.stderr) {{
+        output.textContent += '\\n\\nStderr:\\n' + data.stderr;
       }}
     }}
   }} catch (e) {{
     output.textContent = 'Request failed: ' + e.message;
+    output.classList.add('is-error');
+  }} finally {{
+    btn.classList.remove('is-loading');
   }}
 }}
 </script>

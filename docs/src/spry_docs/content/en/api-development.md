@@ -44,7 +44,7 @@ def by_slug(self):
 
 Available types: `int`, `float`, `slug`, `uuid`, `path`, `str`.
 
-## ControllerBase — Response Helpers
+## ControllerBase â€” Response Helpers
 
 | Method | Status | Usage |
 |---|---|---|
@@ -56,7 +56,7 @@ Available types: `int`, `float`, `slug`, `uuid`, `path`, `str`.
 | `unauthorized(message)` | 401 | Not authenticated |
 | `forbidden(message)` | 403 | No permission |
 | `redirect(location)` | 302 | Redirect |
-| `json(value, status)` | — | Custom JSON |
+| `json(value, status)` | 200 | Custom JSON |
 
 ## Standalone handlers
 

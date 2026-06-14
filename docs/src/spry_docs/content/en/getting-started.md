@@ -85,6 +85,6 @@ src/
 
 ## Next Steps
 
-- [API Development](/docs/en/api-development) — Controllers, handlers, middleware
-- [ORM and Data](/docs/en/orm-data) — DbContext, migrations, relationships
-- [Auth and Security](/docs/en/auth-security) — CORS, JWT, CSRF, rate limiting
+- [API Development](/docs/api-development) — Controllers, handlers, middleware
+- [ORM and Data](/docs/orm-data) — DbContext, migrations, relationships
+- [Auth and Security](/docs/auth-security) — CORS, JWT, CSRF, rate limiting

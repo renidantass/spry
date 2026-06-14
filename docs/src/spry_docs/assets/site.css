@@ -33,6 +33,14 @@ body {
 
 a { color: var(--bl); text-decoration: none; }
 a:hover { color: var(--ac); }
+a[href^="http"]::after { content: " ↗"; font-size: 0.75em; opacity: 0.6; }
+a[href^="http"]:hover::after { opacity: 1; }
+a.card[href^="http"]::after,
+a.btn[href^="http"]::after,
+a.tb-link[href^="http"]::after,
+a.sb-item[href^="http"]::after,
+a.mn-link[href^="http"]::after,
+a.bc-item[href^="http"]::after { content: none; }
 
 /* Topbar */
 .topbar {
@@ -254,20 +262,47 @@ pre code { background: none; padding: 0; }
 }
 .pg-lang { font-size: 11px; color: var(--tx3); text-transform: uppercase; letter-spacing: 1px; }
 .pg-run {
+  display: inline-flex; align-items: center; gap: 6px;
   background: var(--ac); color: var(--bg); border: none; padding: 4px 12px;
   border-radius: var(--r); font-size: 12px; font-weight: 600; cursor: pointer;
 }
 .pg-run:hover { background: var(--ac2); }
+.pg-run.is-loading { opacity: 0.7; pointer-events: none; }
+
+/* Playground spinner */
+.pg-spinner {
+  display: none; width: 12px; height: 12px;
+  border: 2px solid var(--bg); border-top-color: transparent;
+  border-radius: 50%; animation: pg-spin 0.6s linear infinite;
+}
+.pg-run.is-loading .pg-spinner { display: inline-block; }
+@keyframes pg-spin { to { transform: rotate(360deg); } }
+
+/* Playground overlay (textarea + highlighted pre) */
+.pg-wrap { position: relative; }
+.pg-ed, .pg-highlight {
+  width: 100%; padding: 16px; margin: 0; border: none;
+  font-family: var(--fm); font-size: 13px; line-height: 1.5;
+  min-height: 120px; overflow: auto;
+  white-space: pre-wrap; word-wrap: break-word;
+  tab-size: 4;
+}
 .pg-ed {
-  width: 100%; padding: 16px; background: var(--bg3); border: none;
-  color: var(--tx); font-family: var(--fm); font-size: 13px; line-height: 1.5;
-  resize: vertical; outline: none; min-height: 120px;
+  position: relative; z-index: 2;
+  background: transparent; color: transparent;
+  caret-color: var(--tx); resize: vertical; outline: none;
+}
+.pg-ed::selection { background: rgba(121,242,192,0.3); }
+.pg-highlight {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1;
+  background: var(--bg3); pointer-events: none;
 }
 .pg-out {
   padding: 12px 16px; background: var(--bg); color: var(--tx2);
   font-family: var(--fm); font-size: 13px; min-height: 40px; border-top: 1px solid var(--br);
   white-space: pre-wrap;
 }
+.pg-out.is-error { color: var(--rd); }
 
 /* Footer */
 .ftr {

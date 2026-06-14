@@ -66,7 +66,7 @@ def build() -> None:
             file_path = OUTPUT_DIR / page.lstrip("/") / "index.html"
         file_path.parent.mkdir(parents=True, exist_ok=True)
         file_path.write_text(resp.text, encoding="utf-8")
-        print(f"  ✓ {page}")
+        print(f"  [OK] {page}")
 
     resp = client.get(f"{BASE_URL}/search-index.json")
     (OUTPUT_DIR / "search-index.json").write_text(resp.text, encoding="utf-8")
