@@ -8,26 +8,59 @@ jobs:
   review:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write
-      contents: write
       pull-requests: write
       issues: write
     steps:
       - uses: actions/checkout@v6
         with:
-          persist-credentials: false
+          fetch-depth: 0
 
-      - uses: anomalyco/opencode/github@latest
+      - uses: actions/github-script@v7
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENCODE_GO_API_KEY: ${{ secrets.OPENCODE_GO_API_KEY }}
-          OPENCODE_CONFIG_CONTENT: '{"share":"disabled"}'
         with:
-          model: opencode-go/deepseek-v4-flash
-          use_github_token: true
-          prompt: |
-            Analise este pull request:
+          script: |
+            const diff = await github.rest.pulls.get({
+              ...context.repo,
+              pull_number: context.issue.number,
+              mediaType: { format: "diff" }
+            }).then(r => r.data);
+
+            const prompt = `Analise este pull request:
             - Verifique problemas de qualidade de codigo
             - Procure por potenciais bugs
             - Sugira melhorias
             - Seja criativo e bem humorado nas sugestoes
+
+            Diff do PR:
+            ${diff}`;
+
+            const response = await fetch("https://opencode.ai/zen/go/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${process.env.OPENCODE_GO_API_KEY}`
+              },
+              body: JSON.stringify({
+                model: "deepseek-v4-flash",
+                messages: [
+                  { role: "system", content: "Voce e um revisor de codigo experiente." },
+                  { role: "user", content: prompt }
+                ],
+                max_tokens: 4096
+              })
+            });
+
+            const data = await response.json();
+            const review = data.choices?.[0]?.message?.content;
+
+            if (!review) {
+              core.error("Resposta vazia da API", data);
+              return;
+            }
+
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: context.issue.number,
+              body: `## AI Code Review\n\n${review}`
+            });
