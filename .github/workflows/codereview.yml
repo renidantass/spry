@@ -42,10 +42,9 @@ jobs:
               body: JSON.stringify({
                 model: "deepseek-v4-flash",
                 messages: [
-                  { role: "system", content: "Voce e um revisor de codigo experiente." },
-                  { role: "user", content: "Analise este PR:\nTitulo: " + pr.title + "\nAutor: " + pr.user.login + "\n\n- Verifique problemas de qualidade de codigo\n- Procure por potenciais bugs\n- Sugira melhorias\n\nDiff:\n" + diffPreview }
+                  { role: "user", content: "Analise este PR:\nTitulo: " + pr.title + "\nAutor: " + pr.user.login + "\n- Verifique problemas de qualidade de codigo\n- Procure por potenciais bugs\n- Sugira melhorias\n\nDiff:\n" + diffPreview }
                 ],
-                max_tokens: 4096
+                max_tokens: 8192
               })
             });
 
@@ -55,7 +54,8 @@ jobs:
             core.info(`API status: ${status}`);
             core.info(`API response: ${JSON.stringify(data)}`);
 
-            const review = data.choices?.[0]?.message?.content;
+            const msg = data.choices?.[0]?.message;
+            const review = msg?.content || msg?.reasoning_content || "";
             if (!review) {
               core.setFailed(`API error (${status}): ${data.error?.message || "resposta vazia"} - ${JSON.stringify(data)}`);
               return;
