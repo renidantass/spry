@@ -21,6 +21,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENCODE_GO_API_KEY: ${{ secrets.OPENCODE_GO_API_KEY }}
+          OPENCODE_CONFIG_CONTENT: '{"share":"disabled"}'
         with:
           model: opencode-go/deepseek-v4-flash
           use_github_token: true
