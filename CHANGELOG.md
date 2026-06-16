@@ -40,6 +40,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 [0.1.0]: https://github.com/renidantass/spry/releases/tag/v0.1.0
 
+## v0.7.0 (2026-06-16)
+
+### Feat
+
+- implement opencode-review workflow, update save_changes to save in various files
+
 ## v0.6.0 (2026-06-14)
 
 ### Feat
