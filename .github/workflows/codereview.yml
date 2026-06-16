@@ -43,16 +43,7 @@ jobs:
                 model: "deepseek-v4-flash",
                 messages: [
                   { role: "system", content: "Voce e um revisor de codigo experiente." },
-                  { role: "user", content: `Analise este PR:
-Titulo: ${pr.title}
-Autor: ${pr.user.login}
-
-- Verifique problemas de qualidade de codigo
-- Procure por potenciais bugs
-- Sugira melhorias
-
-Diff:
-${diffPreview}` }
+                  { role: "user", content: "Analise este PR:\nTitulo: " + pr.title + "\nAutor: " + pr.user.login + "\n\n- Verifique problemas de qualidade de codigo\n- Procure por potenciais bugs\n- Sugira melhorias\n\nDiff:\n" + diffPreview }
                 ],
                 max_tokens: 4096
               })
