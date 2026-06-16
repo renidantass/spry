@@ -31,19 +31,7 @@ jobs:
               mediaType: { format: "diff" }
             }).then(r => r.data);
 
-            const prompt = `Analise este pull request do repositorio spry-core.
-            do autor ${pr.user.login}.
-
-            Titulo: ${pr.title}
-            Descricao: ${pr.body || "sem descricao"}
-
-            - Verifique problemas de qualidade de codigo
-            - Procure por potenciais bugs
-            - Sugira melhorias
-            - Seja criativo e bem humorado nas sugestoes
-
-            Diff do PR:
-            ${diff.slice(0, 40000)}`;
+            const diffPreview = (diff || "").slice(0, 15000);
 
             const response = await fetch("https://opencode.ai/zen/go/v1/chat/completions", {
               method: "POST",
@@ -55,17 +43,30 @@ jobs:
                 model: "deepseek-v4-flash",
                 messages: [
                   { role: "system", content: "Voce e um revisor de codigo experiente." },
-                  { role: "user", content: prompt }
+                  { role: "user", content: `Analise este PR:
+Titulo: ${pr.title}
+Autor: ${pr.user.login}
+
+- Verifique problemas de qualidade de codigo
+- Procure por potenciais bugs
+- Sugira melhorias
+
+Diff:
+${diffPreview}` }
                 ],
                 max_tokens: 4096
               })
             });
 
+            const status = response.status;
             const data = await response.json();
-            const review = data.choices?.[0]?.message?.content;
 
+            core.info(`API status: ${status}`);
+            core.info(`API response: ${JSON.stringify(data)}`);
+
+            const review = data.choices?.[0]?.message?.content;
             if (!review) {
-              core.error("Resposta vazia da API", JSON.stringify(data));
+              core.setFailed(`API error (${status}): ${data.error?.message || "resposta vazia"} - ${JSON.stringify(data)}`);
               return;
             }
 
