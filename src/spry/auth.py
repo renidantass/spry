@@ -24,10 +24,10 @@ class UserPrincipal:
     @property
     def roles(self) -> list[str]:
         raw = self.claims.get("roles", [])
-        if isinstance(raw, str):
-            return [item.strip() for item in raw.split(",") if item.strip()]
-        if isinstance(raw, list):
-            return [str(item) for item in raw]
+        # if isinstance(raw, str):
+        #     return [item.strip() for item in raw.split(",") if item.strip()]
+        # if isinstance(raw, list):
+        #     return [str(item) for item in raw]
         return []
 
     def is_in_role(self, role: str) -> bool:
