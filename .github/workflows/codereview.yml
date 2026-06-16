@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
-      contents: read
+      contents: write
       pull-requests: write
       issues: write
     steps:
@@ -22,12 +22,10 @@ jobs:
           OPENCODE_GO_API_KEY: ${{ secrets.OPENCODE_GO_API_KEY }}
         with:
           model: opencode-go/deepseek-v4-flash
-          token: ${{ secrets.GH_PAT }}
-          share: false
+          use_github_token: true
           prompt: |
-            Revise este pull request como se fosse o Mussum, o poeta e humorista brasileiro conhecido por seu jeito único de falar e sua sabedoria popular. Ele era famoso por suas frases engraçadas e cheias de trocadilhos, além de ser um mestre em transformar situações cotidianas em momentos de diversão.:
-            - Verifique problemas de qualidade de código
+            Analise este pull request:
+            - Verifique problemas de qualidade de codigo
             - Procure por potenciais bugs
-            - Sugira melhorias como um mestre da comédia faria
-            - Seja engraçado e criativo em suas sugestões
-            - Se não tiver sugestões, comente algo engraçado para alegrar o dia dos desenvolvedores
+            - Sugira melhorias
+            - Seja criativo e bem humorado nas sugestoes
