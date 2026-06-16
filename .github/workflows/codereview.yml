@@ -9,13 +9,24 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
+      contents: read
+      pull-requests: write
+      issues: write
     steps:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
 
       - uses: anomalyco/opencode/github@latest
+        continue-on-error: true
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENCODE_GO_API_KEY: ${{ secrets.OPENCODE_GO_API_KEY }}
         with:
           model: opencode-go/deepseek-v4-flash
+          use_github_token: true
+          prompt: |
+            Analise este pull request:
+            - Verifique problemas de qualidade de codigo
+            - Procure por potenciais bugs
+            - Sugira melhorias
