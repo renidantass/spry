@@ -1,11 +1,15 @@
-from spry.auth import PasswordHasher
-from spry.orm import DbContext
+import logging
 
+from spry.auth import PasswordHasher
+
+from auth_api.data import AppDbContext
 from auth_api.models import User
 
+logger = logging.getLogger("spry.seed")
 
-def seed(db: DbContext) -> None:
-    if db.users.all():
+
+def seed(db: AppDbContext) -> None:
+    if db.users.count() > 0:
         return
     hasher = PasswordHasher()
     admin = User(
@@ -22,5 +26,5 @@ def seed(db: DbContext) -> None:
     )
     db.users.add(admin)
     db.users.add(user)
-    db.save_changes()
-    print(f"Seeded {2} users")
+    db.save()
+    logger.info("Seeded 2 users")

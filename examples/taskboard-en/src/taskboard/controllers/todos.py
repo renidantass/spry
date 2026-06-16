@@ -23,7 +23,7 @@ class TodosController(ControllerBase):
     def create(self, todo: CreateTodo):
         entity = Todo(title=todo.title, done=False)
         self.db.todos.add(entity)
-        self.db.save_changes()
+        self.db.save()
         return self.created(f"/todos/{entity.id}", entity)
 
     @put("/{id}")
@@ -33,7 +33,7 @@ class TodosController(ControllerBase):
             return self.not_found("Todo not found")
         entity.title = todo.title
         self.db.todos.update(entity)
-        self.db.save_changes()
+        self.db.save()
         return entity
 
     @delete("/{id}")
@@ -42,5 +42,5 @@ class TodosController(ControllerBase):
         if entity is None:
             return self.not_found("Todo not found")
         self.db.todos.remove(id)
-        self.db.save_changes()
+        self.db.save()
         return self.no_content()

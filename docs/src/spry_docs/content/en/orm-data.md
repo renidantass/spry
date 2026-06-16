@@ -92,7 +92,7 @@ results = DbSet.from_sql(db, Product, "SELECT * FROM products WHERE price > ?", 
 # Create
 product = Product(name="Notebook", price=2999.0)
 db.products.add(product)
-db.save_changes()
+db.save()
 
 # Read
 product = db.products.find(product.id)
@@ -100,11 +100,11 @@ product = db.products.find(product.id)
 # Update
 product.price = 2499.0
 db.products.update(product)
-db.save_changes()
+db.save()
 
 # Delete
 db.products.remove(product.id)
-db.save_changes()
+db.save()
 ```
 
 ## Relationships
@@ -177,7 +177,7 @@ class User:
 
 ## Best Practices
 
-- Always use `save_changes()` after `add()`, `update()`, `remove()`
+- Always use `save()` after `add()`, `update()`, `remove()`
 - Prefer `transaction()` for operations involving multiple entities
 - Use `pool_size` in production to avoid creating connections per request
 - Configure the database URL via `appsettings.json` or environment variable `APP__database__url`

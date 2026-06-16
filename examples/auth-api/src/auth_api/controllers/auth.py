@@ -1,4 +1,4 @@
-from spry.auth import PasswordHasher, authorize
+from spry.auth import JwtAuthService, PasswordHasher, authorize
 from spry.http import Request
 from spry.routing import controller, get, post
 
@@ -8,8 +8,9 @@ from auth_api.models import LoginRequest, RegisterRequest, User
 
 @controller("/auth")
 class AuthController:
-    def __init__(self, db: AppDbContext) -> None:
+    def __init__(self, db: AppDbContext, jwt: JwtAuthService) -> None:
         self.db = db
+        self.jwt = jwt
         self.hasher = PasswordHasher()
 
     @post("/register")
@@ -29,7 +30,7 @@ class AuthController:
             role="user",
         )
         self.db.users.add(user)
-        self.db.save_changes()
+        self.db.save()
         return {"message": "User created", "user": {"id": user.id, "username": user.username, "email": user.email}}, 201
 
     @post("/login")
@@ -38,15 +39,13 @@ class AuthController:
         if user is None or not self.hasher.verify(body.password, user.password_hash):
             return {"error": "Invalid credentials"}, 401
 
-        token = request.services.jwt.create_token(
-            {"sub": user.id, "username": user.username, "role": user.role}
-        )
+        token = self.jwt.issue(str(user.id), user.username, {"role": user.role})
         return {"token": token, "user": {"id": user.id, "username": user.username, "role": user.role}}
 
     @get("/me")
     @authorize()
     def me(self, request: Request):
-        user_id = request.user.id
+        user_id = int(request.user.user_id)
         user = self.db.users.find(user_id)
         if user is None:
             return {"error": "User not found"}, 404

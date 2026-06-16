@@ -362,7 +362,7 @@ def _run_seed(entry_path: str, context_path: str | None, database: str | None) -
     try:
         db.ensure_created()
         entrypoint(db)
-        db.save_changes()
+        db.save()
     finally:
         db.close()
     logger.info("Seed executed")

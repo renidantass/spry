@@ -4,4 +4,4 @@ from taskboard.models import Todo
 
 
 class AppDbContext(DbContext):
-    __models__ = [Todo]
+    models = [Todo]

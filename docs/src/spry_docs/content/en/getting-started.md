@@ -65,7 +65,7 @@ class TodosController(ControllerBase):
     @post("/")
     def create(self, todo: Todo):
         self.db.todos.add(todo)
-        self.db.save_changes()
+        self.db.save()
         return self.created(f"/todos/{todo.id}", todo)
 
 builder = AppBuilder()

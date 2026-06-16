@@ -66,7 +66,7 @@ PAGES: list[Page] = [
                 ],
                 visual="todo-flow",
                 code_language="python",
-                code='from dataclasses import dataclass\n\nfrom spry import AppBuilder, ControllerBase, DbContext, controller, dbset, get, key, post\n\n\n@dataclass(slots=True)\nclass Todo:\n    id: int | None = key()\n    title: str = ""\n    done: bool = False\n\n\nclass AppDbContext(DbContext):\n    todos = dbset(Todo)\n\n\n@controller("/todos")\nclass TodosController(ControllerBase):\n    def __init__(self, db: AppDbContext) -> None:\n        self.db = db\n\n    @get("/")\n    def list(self):\n        return self.db.todos.all()\n\n    @post("/")\n    def create(self, todo: Todo):\n        self.db.todos.add(todo)\n        self.db.save_changes()\n        return self.created(f"/todos/{todo.id}", todo)\n\n\nbuilder = AppBuilder()\nbuilder.add_db_context(AppDbContext)\napp = builder.build()\napp.run()',
+                code='from dataclasses import dataclass\n\nfrom spry import AppBuilder, ControllerBase, DbContext, controller, dbset, get, key, post\n\n\n@dataclass(slots=True)\nclass Todo:\n    id: int | None = key()\n    title: str = ""\n    done: bool = False\n\n\nclass AppDbContext(DbContext):\n    todos = dbset(Todo)\n\n\n@controller("/todos")\nclass TodosController(ControllerBase):\n    def __init__(self, db: AppDbContext) -> None:\n        self.db = db\n\n    @get("/")\n    def list(self):\n        return self.db.todos.all()\n\n    @post("/")\n    def create(self, todo: Todo):\n        self.db.todos.add(todo)\n        self.db.save()\n        return self.created(f"/todos/{todo.id}", todo)\n\n\nbuilder = AppBuilder()\nbuilder.add_db_context(AppDbContext)\napp = builder.build()\napp.run()',
             ),
             Section(
                 title="Estrutura recomendada",
@@ -129,7 +129,7 @@ PAGES: list[Page] = [
                     "`self.no_content()`",
                 ],
                 code_language="python",
-                code='@post("/")\ndef create(self, todo: CreateTodo):\n    entity = Todo(title=todo.title)\n    self.db.todos.add(entity)\n    self.db.save_changes()\n    return self.created(f"/todos/{entity.id}", entity)',
+                code='@post("/")\ndef create(self, todo: CreateTodo):\n    entity = Todo(title=todo.title)\n    self.db.todos.add(entity)\n    self.db.save()\n    return self.created(f"/todos/{entity.id}", entity)',
             ),
             Section(
                 title="Handlers avulsos",

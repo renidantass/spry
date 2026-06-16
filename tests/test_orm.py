@@ -36,7 +36,7 @@ class OrmTests(unittest.TestCase):
                 db.ensure_created()
                 author = db.authors.add(Author(name="Ada"))
                 db.posts.add(Post(title="Hello", author_id=author.id or 0))
-                db.save_changes()
+                db.save()
 
                 post = db.posts.first(title="Hello")
                 assert post is not None
@@ -58,7 +58,7 @@ class OrmTests(unittest.TestCase):
             db.ensure_created()
             with self.assertRaises(sqlite3.IntegrityError):
                 db.posts.add(Post(title="Orphan", author_id=999))
-                db.save_changes()
+                db.save()
         finally:
             db.close()
 

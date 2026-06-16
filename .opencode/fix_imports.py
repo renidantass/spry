@@ -9,7 +9,6 @@ BASE = Path(__file__).resolve().parents[1]
 IMPORT_MAP = {
     "AppBuilder": "spry.app",
     "Application": "spry.app",
-    "deprecated": "spry.app",
     "ControllerBase": "spry.controllers",
     "Controller": "spry.controllers",
     "AuthenticatedController": "spry.controllers",

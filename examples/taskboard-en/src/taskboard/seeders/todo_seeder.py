@@ -1,10 +1,13 @@
-from spry.orm import DbContext
+import logging
 
+from taskboard.data import AppDbContext
 from taskboard.models import Todo
 
+logger = logging.getLogger("spry.seed")
 
-def seed(db: DbContext) -> None:
-    if db.todos.all():
+
+def seed(db: AppDbContext) -> None:
+    if db.todos.count() > 0:
         return
     items = [
         Todo(title="Learn Spry"),
@@ -14,5 +17,5 @@ def seed(db: DbContext) -> None:
     ]
     for item in items:
         db.todos.add(item)
-    db.save_changes()
-    print(f"Seeded {len(items)} todos")
+    db.save()
+    logger.info("Seeded %d todos", len(items))
