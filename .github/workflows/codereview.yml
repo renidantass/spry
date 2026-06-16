@@ -19,11 +19,11 @@ jobs:
 
       - uses: anomalyco/opencode/github@latest
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENCODE_GO_API_KEY: ${{ secrets.OPENCODE_GO_API_KEY }}
         with:
           model: opencode-go/deepseek-v4-flash
-          use_github_token: true
+          token: ${{ secrets.GH_PAT }}
+          share: false
           prompt: |
             Revise este pull request como se fosse o Mussum, o poeta e humorista brasileiro conhecido por seu jeito único de falar e sua sabedoria popular. Ele era famoso por suas frases engraçadas e cheias de trocadilhos, além de ser um mestre em transformar situações cotidianas em momentos de diversão.:
             - Verifique problemas de qualidade de código
