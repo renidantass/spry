@@ -27,21 +27,6 @@ jobs:
           pip install -e ".[all]"
           pip install ruff mypy
 
-      - name: Configure OpenCode Go provider
-        run: |
-          mkdir -p ~/.config/opencode
-          cat > ~/.config/opencode/opencode.json <<'EOF'
-          {
-            "provider": {
-              "opencode-go": {
-                "options": {
-                  "apiKey": "{env:OPENCODE_GO_API_KEY}"
-                }
-              }
-            }
-          }
-          EOF
-
       - uses: anomalyco/opencode/github@latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
