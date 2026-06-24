@@ -160,11 +160,22 @@ class Card:
         )
 
 
+SEARCH_PLACEHOLDERS: dict[str, str] = {
+    "pt": "Pesquisar na docs...  (Ctrl+K)",
+    "en": "Search docs...  (Ctrl+K)",
+    "fr": "Rechercher dans la docs...  (Ctrl+K)",
+}
+
+
 class SearchBar:
+    def __init__(self, locale: str = "pt") -> None:
+        self.locale = locale
+
     def render(self) -> str:
+        placeholder = SEARCH_PLACEHOLDERS.get(self.locale, SEARCH_PLACEHOLDERS["en"])
         return (
             '<div class="srch">'
-            '<input type="text" class="srch-inp" placeholder="Search docs...  (Ctrl+K)" '
+            f'<input type="text" class="srch-inp" placeholder="{placeholder}" '
             'oninput="searchDocs(this.value)" id="searchInput" />'
             '<div class="srch-ico">🔍</div>'
             '<div class="srch-rs" id="searchResults"></div>'
@@ -281,6 +292,20 @@ class Playground:
         )
 
 
+LANG_LABELS: dict[str, str] = {
+    "pt": "PT",
+    "en": "EN",
+    "fr": "FR",
+}
+
+NAV_LABELS: dict[str, dict[str, str]] = {
+    "home": {"pt": "Home", "en": "Home", "fr": "Accueil"},
+    "docs": {"pt": "Docs", "en": "Docs", "fr": "Docs"},
+    "api": {"pt": "API", "en": "API", "fr": "API"},
+    "playground": {"pt": "Playground", "en": "Playground", "fr": "Playground"},
+}
+
+
 class Layout:
     def __init__(
         self,
@@ -310,11 +335,14 @@ class Layout:
 
     def render(self) -> str:
         sidebar = Sidebar(self.pages, self.active_slug, self.base_url, self.locale).render()
-        search = SearchBar().render()
+        search = SearchBar(self.locale).render()
         vs = VersionSelector(self.versions, self.version).render()
-        alt_locale = "en" if self.locale == "pt" else "pt"
-        flag_name = "us" if self.locale == "pt" else "br"
-        alt_label = f'<img src="{self.base_url}/assets/flag-{flag_name}.svg" class="tb-flag" alt=""> {"EN" if self.locale == "pt" else "PT"}'
+        _alt_locales: dict[str, str] = {"pt": "en", "en": "pt", "fr": "en"}
+        _flag_names: dict[str, str] = {"pt": "br", "en": "us", "fr": "fr"}
+        alt_locale = _alt_locales.get(self.locale, "pt")
+        alt_flag = _flag_names.get(alt_locale, "us")
+        alt_label_name = LANG_LABELS.get(alt_locale, "EN")
+        alt_label = f'<img src="{self.base_url}/assets/flag-{alt_flag}.svg" class="tb-flag" alt=""> {alt_label_name}'
         canonical_tag = f'<link rel="canonical" href="{self.canonical}"/>' if self.canonical else ""
 
         return f"""<!DOCTYPE html>
@@ -338,9 +366,9 @@ class Layout:
 <div class="topbar">
   <a href="{self.base_url}/" class="tb-brand">spry</a>
   <div class="tb-nav">
-    <a href="{self.base_url}/{self.locale}/docs/getting-started" class="tb-link">Docs</a>
-    <a href="{self.base_url}/api/app" class="tb-link">API</a>
-    <a href="{self.base_url}/playground" class="tb-link">Playground</a>
+    <a href="{self.base_url}/{self.locale}/docs/getting-started" class="tb-link">{NAV_LABELS['docs'].get(self.locale, 'Docs')}</a>
+    <a href="{self.base_url}/api/app" class="tb-link">{NAV_LABELS['api'].get(self.locale, 'API')}</a>
+    <a href="{self.base_url}/playground" class="tb-link">{NAV_LABELS['playground'].get(self.locale, 'Playground')}</a>
   </div>
   <div class="tb-right">
     {vs}
@@ -351,10 +379,10 @@ class Layout:
 
 <div class="mobile-nav" id="mobileNav" onclick="closeMobileMenu(event)">
   <div class="mn-inner">
-    <a href="{self.base_url}/" class="mn-link">Home</a>
-    <a href="{self.base_url}/{self.locale}/docs/getting-started" class="mn-link">Docs</a>
-    <a href="{self.base_url}/api/app" class="mn-link">API</a>
-    <a href="{self.base_url}/playground" class="mn-link">Playground</a>
+    <a href="{self.base_url}/" class="mn-link">{NAV_LABELS['home'].get(self.locale, 'Home')}</a>
+    <a href="{self.base_url}/{self.locale}/docs/getting-started" class="mn-link">{NAV_LABELS['docs'].get(self.locale, 'Docs')}</a>
+    <a href="{self.base_url}/api/app" class="mn-link">{NAV_LABELS['api'].get(self.locale, 'API')}</a>
+    <a href="{self.base_url}/playground" class="mn-link">{NAV_LABELS['playground'].get(self.locale, 'Playground')}</a>
     {search}
   </div>
 </div>
