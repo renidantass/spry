@@ -48,9 +48,20 @@ jobs:
           pip install -e ".[all]"
           pip install ruff mypy
 
-      - name: Configure OpenCode auth
+      - name: Configure OpenCode Go provider
         run: |
-          python3 -c "import json, os; p=os.path.expanduser('~/.local/share/opencode/auth.json'); os.makedirs(os.path.dirname(p), exist_ok=True); json.dump({'opencode-go': os.environ['OPENCODE_GO_API_KEY']}, open(p, 'w'))"
+          mkdir -p ~/.config/opencode
+          cat > ~/.config/opencode/opencode.json <<'EOF'
+          {
+            "provider": {
+              "opencode-go": {
+                "options": {
+                  "apiKey": "{env:OPENCODE_GO_API_KEY}"
+                }
+              }
+            }
+          }
+          EOF
 
       - uses: anomalyco/opencode/github@latest
         env:
