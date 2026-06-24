@@ -1,0 +1,89 @@
+name: opencode-issue
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  pipeline:
+    if: |
+      github.event.issue.pull_request == null &&
+      (contains(github.event.comment.body, '/oc') ||
+       contains(github.event.comment.body, '/opencode'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Create branch from issue title
+        id: branch
+        run: |
+          TITLE="${{ github.event.issue.title }}"
+          SLUG=$(echo "$TITLE" | iconv -t ascii//TRANSLIT 2>/dev/null || echo "$TITLE")
+          SLUG=$(echo "$SLUG" | tr '[:upper:]' '[:lower:]')
+          SLUG=$(echo "$SLUG" | sed 's/[^a-z0-9]/-/g; s/--*/-/g; s/^-//; s/-$//')
+          BRANCH="opencode/${SLUG}"
+          git checkout -b "$BRANCH"
+          git push origin "$BRANCH"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Install quality tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install -e ".[all]"
+          pip install ruff mypy
+
+      - uses: anomalyco/opencode/github@latest
+        env:
+          OPENCODE_GO_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          model: opencode-go/deepseek-v4-flash
+          use_github_token: true
+          prompt: |
+            You are on branch "${{ steps.branch.outputs.branch }}".
+
+            ## Phase 1: Implement
+            Implement the changes described in this issue:
+            Issue #${{ github.event.issue.number }}: ${{ github.event.issue.title }}
+            Body: ${{ github.event.issue.body }}
+
+            Commit with conventional commit format and push.
+
+            ## Phase 2: Create PR
+            Run:
+              PR_URL=$(gh pr create --base main --head "${{ steps.branch.outputs.branch }}" \
+                --title "${{ github.event.issue.title }}" \
+                --body "Closes #${{ github.event.issue.number }}")
+              PR_NUMBER=$(echo "$PR_URL" | grep -oP '\d+$')
+              gh pr edit "$PR_NUMBER" --add-label "opencode/auto-implemented"
+              echo "$PR_NUMBER" > .pr_number
+
+            ## Phase 3: Quality Gate
+            Run these checks and fix any failures until all pass:
+              1. ruff check .
+              2. mypy src/
+              3. python -m unittest discover -s tests -v
+
+            ## Phase 4: Senior Dev Review
+            Read PR_NUMBER from .pr_number.
+            Review the code as a Senior Developer:
+              - Code quality, architecture, design patterns
+              - Test coverage and correctness
+              - Security vulnerabilities and edge cases
+              - Project conventions (type hints, dataclasses, conventional commits)
+
+            Then:
+              - If solid -> gh pr review "$PR_NUMBER" --approve -b "✅ Approved. All quality checks passed."
+                Then: gh pr merge "$PR_NUMBER" --auto --squash
+              - If changes needed -> gh pr review "$PR_NUMBER" --request-changes -b "detailed feedback"
+              - If minor suggestions -> gh pr review "$PR_NUMBER" --comment -b "suggestions"

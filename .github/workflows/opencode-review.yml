@@ -1,0 +1,57 @@
+name: opencode-review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: write
+      issues: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Install quality tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install -e ".[all]"
+          pip install ruff mypy
+
+      - uses: anomalyco/opencode/github@latest
+        env:
+          OPENCODE_GO_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          model: opencode-go/deepseek-v4-flash
+          use_github_token: true
+          prompt: |
+            You are reviewing PR #${{ github.event.number }}.
+
+            ## Phase 1: Quality Gate
+            Run these checks and fix any failures until all pass:
+              1. ruff check .
+              2. mypy src/
+              3. python -m unittest discover -s tests -v
+
+            ## Phase 2: Senior Dev Review
+            Review the PR diff as a Senior Developer:
+              - Code quality, architecture, design patterns
+              - Test coverage and correctness
+              - Security vulnerabilities and edge cases
+              - Project conventions (type hints, dataclasses, conventional commits)
+
+            Then submit a formal review:
+              - If solid -> gh pr review ${{ github.event.number }} --approve -b "✅ Approved by Senior Dev."
+                Then: gh pr merge ${{ github.event.number }} --auto --squash
+              - If changes needed -> gh pr review ${{ github.event.number }} --request-changes -b "detailed feedback"
+              - If minor suggestions -> gh pr review ${{ github.event.number }} --comment -b "suggestions"
+
+            Be professional, constructive, and specific.
