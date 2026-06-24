@@ -12,6 +12,8 @@ jobs:
       contents: write
       pull-requests: write
       issues: read
+    env:
+      OPENCODE_GO_API_KEY: ${{ secrets.OPENCODE_GO_API_KEY }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -27,7 +29,6 @@ jobs:
 
       - uses: anomalyco/opencode/github@latest
         env:
-          OPENCODE_GO_API_KEY: ${{ secrets.OPENCODE_GO_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           model: opencode-go/deepseek-v4-flash
