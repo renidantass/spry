@@ -40,6 +40,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 [0.1.0]: https://github.com/renidantass/spry/releases/tag/v0.1.0
 
+## v0.8.12 (2026-06-24)
+
+### Fix
+
+- remove config file, keep only env var and try -free model
+- try opencode-go/deepseek-v4-flash-free model name
+
 ## v0.8.11 (2026-06-24)
 
 ### Fix
