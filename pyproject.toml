@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "spry-core"
-version = "0.8.13"
+version = "0.8.14"
 description = "Opinionated Python web framework with an EF Core-inspired ORM"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -55,7 +55,7 @@ spry = ["templates/**/*"]
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.8.13"
+version = "0.8.14"
 version_files = ["pyproject.toml:^version = "]
 tag_format = "v$version"
 bump_message = "chore(release): v$current_version → v$new_version [skip ci]"
