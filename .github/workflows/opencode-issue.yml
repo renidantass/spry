@@ -67,7 +67,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          model: opencode-go/deepseek-v4-flash
+          model: opencode-go/deepseek-v4-flash-free
           use_github_token: true
           prompt: |
             You are on branch "${{ steps.branch.outputs.branch }}".
