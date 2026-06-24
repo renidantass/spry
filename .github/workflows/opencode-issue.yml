@@ -48,11 +48,24 @@ jobs:
           pip install -e ".[all]"
           pip install ruff mypy
 
+      - name: Configure Go API key
+        run: |
+          python3 -c "
+import json, os
+p = os.path.expanduser('~/.config/opencode/opencode.json')
+os.makedirs(os.path.dirname(p), exist_ok=True)
+config = {}
+if os.path.exists(p):
+    config = json.load(open(p))
+config.setdefault('provider', {})['opencode-go'] = {'apiKey': os.environ['OPENCODE_GO_API_KEY']}
+json.dump(config, open(p, 'w'), indent=2)
+"
+
       - uses: anomalyco/opencode/github@latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          model: opencode-go/deepseek-v4-flash-free
+          model: opencode-go/deepseek-v4-flash
           use_github_token: true
           prompt: |
             You are on branch "${{ steps.branch.outputs.branch }}".
