@@ -40,6 +40,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 [0.1.0]: https://github.com/renidantass/spry/releases/tag/v0.1.0
 
+## v0.8.5 (2026-06-24)
+
+### Fix
+
+- try opencode/ provider instead of opencode-go/
+
 ## v0.8.4 (2026-06-24)
 
 ### Fix
