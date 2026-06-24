@@ -40,6 +40,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 [0.1.0]: https://github.com/renidantass/spry/releases/tag/v0.1.0
 
+## v0.8.4 (2026-06-24)
+
+### Fix
+
+- use correct secret OPENCODE_GO_API_KEY
+- restore model opencode-go/deepseek-v4-flash with ANTHROPIC_API_KEY secret
+
 ## v0.8.3 (2026-06-24)
 
 ### Fix
