@@ -29,7 +29,7 @@ jobs:
 
       - name: Configure OpenCode auth
         run: |
-          python3 -c "import json, os; json.dump({'opencode-go': os.environ['OPENCODE_GO_API_KEY']}, open(os.path.expanduser('~/.local/share/opencode/auth.json'), 'w'))"
+          python3 -c "import json, os; p=os.path.expanduser('~/.local/share/opencode/auth.json'); os.makedirs(os.path.dirname(p), exist_ok=True); json.dump({'opencode-go': os.environ['OPENCODE_GO_API_KEY']}, open(p, 'w'))"
 
       - uses: anomalyco/opencode/github@latest
         env:
