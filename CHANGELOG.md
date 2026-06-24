@@ -40,6 +40,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 [0.1.0]: https://github.com/renidantass/spry/releases/tag/v0.1.0
 
+## v0.8.13 (2026-06-24)
+
+### Fix
+
+- write Go API key directly to config file (no {env:} substitution)
+
 ## v0.8.12 (2026-06-24)
 
 ### Fix
