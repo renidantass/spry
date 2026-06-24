@@ -48,6 +48,10 @@ jobs:
           pip install -e ".[all]"
           pip install ruff mypy
 
+      - name: Configure OpenCode auth
+        run: |
+          python3 -c "import json, os; json.dump({'opencode-go': os.environ['OPENCODE_GO_API_KEY']}, open(os.path.expanduser('~/.local/share/opencode/auth.json'), 'w'))"
+
       - uses: anomalyco/opencode/github@latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
