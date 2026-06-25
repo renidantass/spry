@@ -4,7 +4,6 @@ import gettext
 import logging
 import warnings
 from pathlib import Path
-from typing import Any
 
 logger = logging.getLogger("spry.i18n")
 
@@ -13,6 +12,7 @@ class _DictTranslations(gettext.GNUTranslations):
     def __init__(self, mapping: dict[str, str]) -> None:
         super().__init__()
         self._catalog = mapping
+        self.plural = lambda n: int(n != 1)
 
 
 class I18nService:
