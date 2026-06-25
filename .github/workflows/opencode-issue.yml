@@ -91,8 +91,63 @@ jobs:
               - Security vulnerabilities and edge cases
               - Project conventions (type hints, dataclasses, conventional commits)
 
-            Then:
-              - If solid -> gh pr review "$PR_NUMBER" --approve -b "✅ Approved. All quality checks passed."
-                Then: gh pr merge "$PR_NUMBER" --auto --squash
-              - If changes needed -> gh pr review "$PR_NUMBER" --request-changes -b "detailed feedback"
-              - If minor suggestions -> gh pr review "$PR_NUMBER" --comment -b "suggestions"
+            ## Phase 5: Write decision
+            Based on your review, write your decision to /home/runner/work/_temp/review_decision.txt
+            followed by your feedback. Use exactly one of these formats:
+
+            For solid code:
+            ```
+            DECISION: approve
+            Your feedback here...
+            ```
+
+            For changes needed:
+            ```
+            DECISION: changes
+            Detailed list of what needs to change...
+            ```
+
+            For minor suggestions:
+            ```
+            DECISION: comment
+            Your suggestions here...
+            ```
+
+            DO NOT run gh commands yourself. Only write the decision file.
+
+      - name: Execute review decision
+        id: review
+        run: |
+          PR_NUMBER=$(cat .pr_number 2>/dev/null || echo "")
+          DECISION_FILE="/home/runner/work/_temp/review_decision.txt"
+          if [ ! -f "$DECISION_FILE" ]; then
+            echo "No decision file found — skipping review action"
+            echo "decision=none" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          DECISION=$(head -1 "$DECISION_FILE" | grep -oP 'DECISION: \K\w+')
+          BODY=$(tail -n +2 "$DECISION_FILE" | sed '/^```/d' | head -c 32000)
+          echo "decision=$DECISION" >> "$GITHUB_OUTPUT"
+          echo "body<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$BODY" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+          echo "PR_NUMBER=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          case "$DECISION" in
+            approve)
+              echo "Approving PR #$PR_NUMBER..."
+              gh pr review "$PR_NUMBER" --approve -b "$BODY"
+              echo "Merging PR #$PR_NUMBER..."
+              gh pr merge "$PR_NUMBER" --auto --squash
+              ;;
+            changes)
+              echo "Requesting changes on PR #$PR_NUMBER..."
+              gh pr review "$PR_NUMBER" --request-changes -b "$BODY"
+              ;;
+            comment)
+              echo "Commenting on PR #$PR_NUMBER..."
+              gh pr review "$PR_NUMBER" --comment -b "$BODY"
+              ;;
+            *)
+              echo "Unknown decision: $DECISION"
+              ;;
+          esac
