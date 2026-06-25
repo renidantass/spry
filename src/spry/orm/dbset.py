@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, is_dataclass
-from typing import Any, Generic, TypeVar, overload
+from typing import Any, Generic, TypeVar
 
 from spry.orm.metadata import (
     DbSetDefinition,
@@ -14,12 +14,12 @@ from spry.orm.metadata import (
 TEntity = TypeVar("TEntity")
 
 
-def dbset(entity_type: type) -> "DbSetDefinition[TEntity]":
+def dbset(entity_type: type) -> DbSetDefinition[TEntity]:
     return DbSetDefinition(entity_type)
 
 
 class _SkipTakeQuery(Generic[TEntity]):
-    def __init__(self, dbset: "DbSet[TEntity]", skip: int) -> None:
+    def __init__(self, dbset: DbSet[TEntity], skip: int) -> None:
         self._dbset = dbset
         self._skip = skip
         self._limit: int | None = None
@@ -176,7 +176,6 @@ class DbSet(Generic[TEntity]):
         return _SkipTakeQuery(self, count)
 
     def paginate(self, page: int = 1, per_page: int = 20) -> Any:
-        from spry.orm.metadata import ModelMetadata
         from spry.orm.page import Page
         total = self.count()
         items = self._execute_with_limit_offset(per_page, (page - 1) * per_page)

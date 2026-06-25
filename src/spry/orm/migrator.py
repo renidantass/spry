@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from spry.db import get_backend, parse_database_url
 from spry.db.backend import DatabaseBackend
 from spry.orm.context import DbContext
-from spry.orm.metadata import slugify, to_table_name
+from spry.orm.metadata import slugify
 
 logger = logging.getLogger("spry.orm")
 
@@ -45,7 +45,7 @@ class DatabaseMigrator:
         finally:
             context.close()
 
-        stamp = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+        stamp = datetime.now(UTC).strftime("%Y%m%d%H%M%S")
         file_name = f"{stamp}_{slugify(name)}.sql"
         destination = output_path / file_name
         destination.write_text(sql, encoding="utf-8")
@@ -149,7 +149,7 @@ class DatabaseMigrator:
                     continue
                 script = file_path.read_text(encoding="utf-8")
                 statements = [s.strip() for s in script.replace("\r\n", "\n").split(";") if s.strip()]
-                now = datetime.now(timezone.utc).isoformat()
+                now = datetime.now(UTC).isoformat()
 
                 # Use the base class batch_execute (no per-call commit) and
                 # run history insert + statements atomically.

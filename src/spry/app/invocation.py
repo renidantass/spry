@@ -7,7 +7,6 @@ from typing import Any, get_type_hints
 
 from spry.di import ServiceScope
 from spry.http import Request
-from spry.results import ActionResult
 from spry.validation import bind_payload, bind_value
 
 _HANDLER_INSPECTION_CACHE: dict[Any, tuple[inspect.Signature, dict[str, Any]]] = {}

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import logging
 import os
 from pathlib import Path
@@ -8,11 +7,9 @@ from typing import Any
 
 from spry.app import AppBuilder
 from spry.http import Request, Response
-from spry.routing import create_function_route
-
 from spry_docs.components import Layout
-from spry_docs.render.parser import parse_markdown, slugify
 from spry_docs.render.blocks import render_block
+from spry_docs.render.parser import parse_markdown, slugify
 
 logger = logging.getLogger("spry.docs")
 
@@ -399,7 +396,10 @@ def create_app() -> Any:
     def run_code(request: Request) -> Response:
         data = request.json()
         code = data.get("code", "")
-        import tempfile, subprocess, sys, os as os_mod
+        import os as os_mod
+        import subprocess
+        import sys
+        import tempfile
         import_paths = os_mod.pathsep.join(
             [str(Path(__file__).resolve().parents[3] / "src"),
              str(Path(__file__).resolve().parents[2] / "src")]

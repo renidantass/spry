@@ -3,15 +3,14 @@ from __future__ import annotations
 import asyncio
 import tempfile
 import unittest
-from dataclasses import dataclass
 from pathlib import Path
 
 from spry import AppBuilder
 from spry.auth import JwtAuthService
 from spry.db.url import parse_database_url
 from spry.http import StreamingResponse
-from spry.token_signer import TokenSigner
 from spry.testing import TestClient
+from spry.token_signer import TokenSigner
 
 
 class OpenApiSecuritySchemesTests(unittest.TestCase):

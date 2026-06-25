@@ -4,7 +4,7 @@ import io
 import json
 import unittest
 
-from spry import AppBuilder, CookieAuthService, ControllerBase, Request, authorize, controller, get
+from spry import AppBuilder, ControllerBase, Request, authorize, controller, get
 
 
 @controller("/secure")

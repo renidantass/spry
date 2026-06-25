@@ -1,12 +1,10 @@
 from __future__ import annotations
 
 import base64
-import hashlib
 import hmac
 import json
 import time
 from typing import Any
-
 
 _ALG_DIGEST_MAP: dict[str, str] = {
     "HS256": "sha256",

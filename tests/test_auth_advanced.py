@@ -3,8 +3,8 @@ from __future__ import annotations
 import time
 import unittest
 
-from spry.auth import PasswordHasher, JwtAuthService, LoginTracker, UserPrincipal
-from spry.http import Request, Response
+from spry.auth import JwtAuthService, LoginTracker, PasswordHasher, UserPrincipal
+from spry.http import Request
 
 
 class PasswordHasherTests(unittest.TestCase):

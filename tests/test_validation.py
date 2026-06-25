@@ -1,9 +1,8 @@
 import unittest
 from dataclasses import dataclass, field, fields
-from typing import Any
 
 from spry.validation import ValidationError, bind_payload, bind_value
-from spry.validators import Required, MinLength, MaxLength, Email, Regex, Range, validate_model
+from spry.validators import Email, MaxLength, MinLength, Range, Regex, Required, validate_model
 
 
 class ValidationTests(unittest.TestCase):
@@ -89,6 +88,7 @@ class ValidationTests(unittest.TestCase):
 class ValidateHelperTests(unittest.TestCase):
     def test_validate_basic(self):
         from dataclasses import dataclass
+
         from spry.validation import validate
 
         @dataclass
@@ -103,6 +103,7 @@ class ValidateHelperTests(unittest.TestCase):
 
     def test_validate_with_default(self):
         from dataclasses import dataclass, fields
+
         from spry.validation import validate
 
         @dataclass
@@ -115,6 +116,7 @@ class ValidateHelperTests(unittest.TestCase):
 
     def test_validate_with_default_factory(self):
         from dataclasses import dataclass, fields
+
         from spry.validation import validate
 
         @dataclass
@@ -127,6 +129,7 @@ class ValidateHelperTests(unittest.TestCase):
 
     def test_validate_no_validators(self):
         from dataclasses import dataclass, fields
+
         from spry.validation import validate
 
         @dataclass
@@ -138,7 +141,7 @@ class ValidateHelperTests(unittest.TestCase):
         self.assertEqual(fields(Model)[0].metadata, {})
 
     def test_snake_case_factories(self):
-        from spry.validators import required, min_length, max_length, email, regex, range_validator
+        from spry.validators import email, max_length, min_length, range_validator, regex, required
 
         self.assertIsInstance(required(), Required)
         self.assertIsInstance(min_length(3), MinLength)

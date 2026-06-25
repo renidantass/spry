@@ -13,7 +13,7 @@ from spry import DbContext, dbset, foreign_key, key, navigation, navigation_many
 class Author:
     id: int | None = key()
     name: str = ""
-    posts: list["Post"] = navigation_many(lambda: Post, foreign_key="author_id")
+    posts: list[Post] = navigation_many(lambda: Post, foreign_key="author_id")
 
 
 @dataclass(slots=True)

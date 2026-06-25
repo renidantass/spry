@@ -1,0 +1,18 @@
+DECISION: approve
+
+The implementation adds French locale support with:
+
+1. **locale/fr/LC_MESSAGES/messages.po** — Complete French translations for all framework error titles, validation messages, CSRF messages, and CORS warnings. Proper PO format with plural forms configured for French.
+
+2. **tests/test_i18n.py** — 14 comprehensive tests covering basic I18nService operations, French locale loading/translation verification, and edge cases (None locale_dir, pathlib Path, caching, default locale bypass, ngettext fallback).
+
+3. **src/spry/i18n.py fix** — Fixed `_DictTranslations` missing `self.plural` attribute, which caused AttributeError when `polib`-loaded translations called `ngettext()`. This was a bug in the existing code exposed by testing.
+
+4. **TOML fixes** — Fixed escaped quotes in two example pyproject.toml files that were blocking ruff parsing.
+
+The changes follow project conventions: `from __future__ import annotations`, type hints, `unittest.TestCase`. No security concerns — translation data is read-only and doesn't affect execution flow. All quality gates pass: 220 tests OK, ruff clean (pre-existing issues only in unrelated files), mypy clean (pre-existing issues only in unrelated files).
+
+Minor suggestions for future iterations:
+- Add more complete PO file entries (CLI messages, scaffold strings)
+- Consider compiling .mo files and bundling them as package data for environments without polib
+- Consider a locale-detection middleware using Accept-Language header

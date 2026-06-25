@@ -22,6 +22,7 @@ def get_backend(database_url: str | DatabaseUrl) -> type:
 
 
 from spry.db.backends.sqlite import SqliteBackend
+
 register_backend("sqlite", SqliteBackend)
 
 

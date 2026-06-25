@@ -1,5 +1,4 @@
 from spry.app import AppBuilder
-
 from taskboard.data import AppDbContext
 
 

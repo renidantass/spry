@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import inspect
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, get_type_hints
-
+from typing import Any, get_type_hints
 
 Factory = Callable[["Resolver"], Any]
 
@@ -65,7 +65,7 @@ class ServiceCollection:
         descriptor = self._build_descriptor(service_type, implementation, None, factory, ServiceLifetime.TRANSIENT)
         self._descriptors[service_type] = descriptor
 
-    def build_provider(self) -> "ServiceProvider":
+    def build_provider(self) -> ServiceProvider:
         return ServiceProvider(self._descriptors)
 
     @staticmethod
@@ -94,7 +94,7 @@ class ServiceProvider(Resolver):
         self._descriptors = descriptors
         self._singletons: dict[type[Any], Any] = {}
 
-    def create_scope(self) -> "ServiceScope":
+    def create_scope(self) -> ServiceScope:
         return ServiceScope(self)
 
     def registered(self, service_type: type[Any]) -> bool:

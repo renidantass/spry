@@ -1,6 +1,5 @@
-from spry.app import AppBuilder
-
 from auth_api.data import AppDbContext
+from spry.app import AppBuilder
 
 
 def cors_dev(context, next_handler):

@@ -108,7 +108,7 @@ def main() -> None:
         print()
         print("  Next steps:")
         print(f"    cd {args.name}")
-        print(f"    pip install spry-core")
+        print("    pip install spry-core")
         if args.orm != "sqlite":
             print(f"    pip install spry-core[{args.orm}]")
         print(f"    spry migrate add initial --context {args.name}.data:AppDbContext")

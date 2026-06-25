@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import unittest
 
+from spry import AppBuilder
 from spry.http import Request
 from spry.testing import TestClient
-from spry import AppBuilder
 
 
 class MalformedJsonTests(unittest.TestCase):

@@ -1,9 +1,8 @@
 import logging
 
-from spry.auth import PasswordHasher
-
 from auth_api.data import AppDbContext
 from auth_api.models import User
+from spry.auth import PasswordHasher
 
 logger = logging.getLogger("spry.seed")
 

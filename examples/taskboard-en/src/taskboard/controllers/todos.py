@@ -1,6 +1,5 @@
 from spry.controllers import ControllerBase
 from spry.routing import controller, delete, get, post, put
-
 from taskboard.data import AppDbContext
 from taskboard.models import CreateTodo, Todo
 

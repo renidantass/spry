@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import json
+from dataclasses import MISSING, dataclass, field, fields, is_dataclass
 from datetime import date, datetime
 from enum import Enum
-from typing import Any, Generic, TypeVar, overload, get_args, get_origin, get_type_hints
-
-from dataclasses import MISSING, dataclass, field, fields, is_dataclass
+from typing import Any, Generic, TypeVar, get_args, get_origin, get_type_hints, overload
 
 from spry.db.column_type import ColumnType
 
@@ -280,7 +279,7 @@ class DbSetDefinition(Generic[TEntity]):
         self.name = name
 
     @overload
-    def __get__(self, instance: None, owner: type) -> "DbSetDefinition[TEntity]": ...
+    def __get__(self, instance: None, owner: type) -> DbSetDefinition[TEntity]: ...
     @overload
     def __get__(self, instance: object, owner: type) -> Any: ...
     def __get__(self, instance: Any, owner: type) -> Any:

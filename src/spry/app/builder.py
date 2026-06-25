@@ -6,7 +6,7 @@ import pkgutil
 import time
 from pathlib import Path
 from types import ModuleType
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from spry import __version__ as _VERSION
 from spry.config import Configuration
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 
 class RouteGroupBuilder:
-    def __init__(self, builder: "AppBuilder", prefix: str, middlewares: list[Any]) -> None:
+    def __init__(self, builder: AppBuilder, prefix: str, middlewares: list[Any]) -> None:
         self._builder = builder
         self._prefix = prefix.rstrip("/")
         self._middleware = list(middlewares)
@@ -214,7 +214,7 @@ class AppBuilder:
     def add_static_files(self, url_prefix: str, directory: str | Path) -> None:
         resolved = Path(directory).resolve()
 
-        def static_handler(path: str, request: "Request"):
+        def static_handler(path: str, request: Request):
             from spry.http import StreamingResponse
             file_path = (resolved / path).resolve()
             if not str(file_path).startswith(str(resolved)):
@@ -228,7 +228,7 @@ class AppBuilder:
 
             # ETag uses size + mtime; cheap and unique enough for static assets.
             mtime = int(file_path.stat().st_mtime)
-            etag_src = f"{file_size}-{mtime}".encode("utf-8")
+            etag_src = f"{file_size}-{mtime}".encode()
             etag = hashlib.sha1(etag_src).hexdigest()  # noqa: S324
 
             if_none_match = request.headers.get("If-None-Match")
@@ -377,7 +377,7 @@ class AppBuilder:
     def add_route_group(self, prefix: str, middlewares: list | None = None) -> RouteGroupBuilder:
         return RouteGroupBuilder(self, prefix, middlewares or [])
 
-    def build(self) -> "Application":
+    def build(self) -> Application:
         from spry.app.application import Application
         if not self._server_header_added:
             self.add_server_header()
@@ -433,7 +433,7 @@ class AppBuilder:
         app.routes.append(health_route)
         return app
 
-    def _register_controllers_from_module(self, module: "ModuleType") -> None:
+    def _register_controllers_from_module(self, module: ModuleType) -> None:
         for attribute in vars(module).values():
             if inspect.isclass(attribute) and getattr(attribute, "__spry_prefix__", None) is not None:
                 self.add_controller(attribute)

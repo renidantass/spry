@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import unittest
+
 from spry import AppBuilder
-from spry.http import Request
 from spry.testing import TestClient
 
 
@@ -132,8 +132,9 @@ class SessionTests(unittest.TestCase):
         self.assertEqual(resp.json()["count"], 1)
 
     def test_session_idle_timeout(self):
-        from spry.session import SessionStore
         import time
+
+        from spry.session import SessionStore
         store = SessionStore(ttl=3600, idle_timeout=1)
         store.set("test", {"user": "admin"})
         time.sleep(1.5)

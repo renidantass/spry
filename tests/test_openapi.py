@@ -4,7 +4,7 @@ import unittest
 from dataclasses import dataclass
 
 from spry.openapi import OpenApiBuilder
-from spry.routing import extract_controller_routes, controller, get, post
+from spry.routing import controller, extract_controller_routes, get, post
 
 
 @controller("/users")
@@ -20,7 +20,7 @@ class UsersController:
         pass
 
     @post("/")
-    def create(self, payload: "CreateUser"):
+    def create(self, payload: CreateUser):
         """Create a new user."""
         pass
 

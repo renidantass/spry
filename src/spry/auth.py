@@ -6,8 +6,9 @@ import logging
 import secrets
 import threading
 import time
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-from typing import Any, Callable, Iterable
+from typing import Any
 
 from spry.http import Request, Response
 from spry.token_signer import TokenSigner

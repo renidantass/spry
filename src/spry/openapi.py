@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import inspect
 import logging
-from dataclasses import dataclass, field, fields, is_dataclass
+from dataclasses import field, fields, is_dataclass
 from datetime import date, datetime
 from typing import Any, get_args, get_origin, get_type_hints
 

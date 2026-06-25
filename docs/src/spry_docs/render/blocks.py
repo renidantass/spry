@@ -1,4 +1,4 @@
-from spry_docs.components import CodeBlock, Note, Tabs, Table, Diagram, Playground
+from spry_docs.components import CodeBlock, Diagram, Note, Playground, Table, Tabs
 from spry_docs.render.parser import Block
 
 

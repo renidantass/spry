@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import json
 import tempfile
 import unittest
-from pathlib import Path
-
-from spry.orm import DbContext, dbset, key, DatabaseMigrator
 from dataclasses import dataclass
 from enum import Enum
+from pathlib import Path
+
+from spry.orm import DatabaseMigrator, DbContext, dbset, key
 
 
 class Status(Enum):

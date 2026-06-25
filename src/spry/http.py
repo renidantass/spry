@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Callable, Iterable
 from dataclasses import asdict, dataclass, is_dataclass
 from http import HTTPStatus
 from http.cookies import SimpleCookie
-from typing import Any, Callable, Iterable
+from typing import Any
 from urllib.parse import parse_qs
 
 MAX_BODY: int = 10 * 1024 * 1024
@@ -56,7 +57,7 @@ class Request:
         self.items: dict[str, Any] = {}
 
     @classmethod
-    def from_environ(cls, environ: dict[str, Any]) -> "Request":
+    def from_environ(cls, environ: dict[str, Any]) -> Request:
         content_length = int(environ.get("CONTENT_LENGTH") or 0)
         if content_length > cls._max_body_size:
             raise ValueError(f"Request body exceeds maximum size of {cls._max_body_size} bytes")
@@ -170,25 +171,25 @@ class Response:
         self._request_scheme = scheme
 
     @classmethod
-    def text(cls, text: str, status_code: int = 200, headers: dict[str, str] | None = None) -> "Response":
+    def text(cls, text: str, status_code: int = 200, headers: dict[str, str] | None = None) -> Response:
         payload = text.encode("utf-8")
         merged = {"Content-Type": "text/plain; charset=utf-8", **(headers or {})}
         return cls(body=payload, status_code=status_code, headers=merged)
 
     @classmethod
-    def html(cls, markup: str, status_code: int = 200, headers: dict[str, str] | None = None) -> "Response":
+    def html(cls, markup: str, status_code: int = 200, headers: dict[str, str] | None = None) -> Response:
         payload = markup.encode("utf-8")
         merged = {"Content-Type": "text/html; charset=utf-8", **(headers or {})}
         return cls(body=payload, status_code=status_code, headers=merged)
 
     @classmethod
-    def json(cls, value: Any, status_code: int = 200, headers: dict[str, str] | None = None) -> "Response":
+    def json(cls, value: Any, status_code: int = 200, headers: dict[str, str] | None = None) -> Response:
         payload = json.dumps(value, default=_json_default).encode("utf-8")
         merged = {"Content-Type": "application/json; charset=utf-8", **(headers or {})}
         return cls(body=payload, status_code=status_code, headers=merged)
 
     @classmethod
-    def empty(cls, status_code: int = 204, headers: dict[str, str] | None = None) -> "Response":
+    def empty(cls, status_code: int = 204, headers: dict[str, str] | None = None) -> Response:
         return cls(body=b"", status_code=status_code, headers=headers or {})
 
     def to_wsgi(self, start_response: Any) -> list[bytes]:
@@ -233,13 +234,13 @@ class Response:
         cookie[name]["expires"] = "Thu, 01 Jan 1970 00:00:00 GMT"
         self._extra_headers.append(("Set-Cookie", cookie.output(header="").strip()))
 
-    def with_etag(self) -> "Response":
+    def with_etag(self) -> Response:
         import hashlib
         etag = hashlib.md5(self.body).hexdigest()
         self.headers["ETag"] = f'"{etag}"'
         return self
 
-    def with_cache_control(self, *, max_age: int = 3600, public: bool = True) -> "Response":
+    def with_cache_control(self, *, max_age: int = 3600, public: bool = True) -> Response:
         parts = ["public" if public else "private", f"max-age={max_age}"]
         self.headers["Cache-Control"] = ", ".join(parts)
         return self
@@ -254,7 +255,7 @@ class StreamingResponse:
 
     def __init__(
         self,
-        chunks: "Iterable[bytes] | Callable[[int], Iterable[bytes]]",
+        chunks: Iterable[bytes] | Callable[[int], Iterable[bytes]],
         *,
         status_code: int = 200,
         headers: dict[str, str] | None = None,

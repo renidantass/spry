@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import re
-from typing import Any, Mapping
+from typing import Any
 
-FILTERS: dict[str, "FilterFn"] = {}
+FILTERS: dict[str, FilterFn] = {}
 
 FilterFn = Any
 
@@ -26,6 +25,6 @@ def _init_filters() -> None:
     register_filter("default", lambda v, d, *a: v if v is not None and v != "" else d)
 
 
-def _html_safe(value: str) -> "HtmlString":
+def _html_safe(value: str) -> HtmlString:
     from spry.views.html import HtmlString
     return HtmlString(value)

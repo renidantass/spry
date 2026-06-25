@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from spry.views import SpryTemplateEngine, tokenize, parse, HtmlString
+from spry.views import HtmlString, SpryTemplateEngine, tokenize
 
 
 class TokenizerTests(unittest.TestCase):

@@ -1,7 +1,6 @@
+from auth_api.data import AppDbContext
 from spry.auth import authorize
 from spry.routing import controller, get
-
-from auth_api.data import AppDbContext
 
 
 @controller("/admin")

@@ -4,7 +4,7 @@ import sqlite3
 from datetime import date, datetime
 from typing import Any
 
-from spry.db.backend import DatabaseBackend, InsertResult
+from spry.db.backend import DatabaseBackend
 from spry.db.column_type import ColumnType
 
 

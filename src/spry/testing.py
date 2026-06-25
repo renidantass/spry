@@ -152,7 +152,7 @@ class TestClient:
         response._extra_headers = extra_headers
         return TestResponse(response)
 
-    def _call_wsgi_streaming(self, environ: dict[str, Any], start_response: Any) -> "Response | StreamingResponse":
+    def _call_wsgi_streaming(self, environ: dict[str, Any], start_response: Any) -> Response | StreamingResponse:
         """Variant that preserves StreamingResponse for tests that need it."""
         result = self.app(environ, start_response)
         # The framework's static handler returns either a Response or a

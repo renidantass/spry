@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import re
 from html import escape
 from typing import Any
@@ -250,7 +249,7 @@ class Diagram:
             f'<div class="rel-ent">{escape(e.get("name", ""))}'
             f'<div class="rel-flds">'
             + "".join(f'<span class="rel-fld">{escape(f)}</span>' for f in e.get("fields", []))
-            + f'</div></div>'
+            + '</div></div>'
             for e in entities
         )
         conn = self.data.get("connection", "→")

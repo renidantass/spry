@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from html import escape
-from typing import Any, Mapping
+from typing import Any
 
 from spry.views.filters import FILTERS
 from spry.views.html import HtmlString

@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import inspect
 import traceback as tb_module
 from html import escape
-from typing import Any
 
 from spry.http import Request
 

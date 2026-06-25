@@ -12,7 +12,7 @@ from spry.views.nodes import (
     TransNode,
     VarNode,
 )
-from spry.views.tokenizer import T_BLOCK, T_COMMENT, T_TEXT, T_VAR, tokenize
+from spry.views.tokenizer import T_BLOCK, T_COMMENT, T_TEXT, T_VAR
 
 
 def parse(tokens: list[tuple[str, str]], engine: Any) -> list[Node]:

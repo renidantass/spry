@@ -1,6 +1,5 @@
 from spry_docs.app import create_app
 
-
 app = create_app()
 
 

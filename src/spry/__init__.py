@@ -1,6 +1,6 @@
 try:
-    from pathlib import Path
     import tomllib
+    from pathlib import Path
     _pyproject = Path(__file__).resolve().parents[2] / "pyproject.toml"
     __version__ = tomllib.load(_pyproject.open("rb")).get("project", {}).get("version", "0.1.0")
 except Exception:
@@ -12,34 +12,8 @@ except Exception:
 
 from spry.app import AppBuilder, Application
 
-# Web layer — http, controllers, routing, results, middleware, views, openapi
-from spry.web import (
-    ActionResult,
-    AuthenticatedController,
-    Controller,
-    ControllerBase,
-    HtmlString,
-    HttpContext,
-    OpenApiBuilder,
-    Request,
-    Response,
-    SpryTemplateEngine,
-    TemplateEngine,
-    UploadedFile,
-    ViewRenderer,
-    bad_request,
-    controller,
-    created,
-    delete,
-    get,
-    no_content,
-    not_found,
-    ok,
-    patch,
-    post,
-    put,
-    serve_static_file,
-)
+# Infrastructure — DI, config, events, i18n, testing, tasks, token_signer
+from spry.config import Configuration
 
 # Data / ORM — DbContext, DbSet, database backends
 from spry.data import (
@@ -76,6 +50,18 @@ from spry.data_annotations import (
     validate,
     validate_model,
 )
+from spry.di import ServiceCollection, ServiceProvider
+from spry.errors import (
+    BadRequestError,
+    ConflictError,
+    ForbiddenError,
+    NotFoundError,
+    SpryError,
+    UnauthorizedError,
+    UnprocessableEntityError,
+)
+from spry.events import EventDispatcher
+from spry.i18n import I18nService
 
 # Security — auth, cors, csrf, sessions, throttling
 from spry.security import (
@@ -90,24 +76,38 @@ from spry.security import (
     UserPrincipal,
     authorize,
 )
-
-# Infrastructure — DI, config, events, i18n, testing, tasks, token_signer
-from spry.config import Configuration
-from spry.di import ServiceCollection, ServiceProvider
-from spry.errors import (
-    BadRequestError,
-    ConflictError,
-    ForbiddenError,
-    NotFoundError,
-    SpryError,
-    UnauthorizedError,
-    UnprocessableEntityError,
-)
-from spry.events import EventDispatcher
-from spry.i18n import I18nService
 from spry.tasks import BackgroundTask, BackgroundWorker
 from spry.testing import TestClient, TestResponse
 from spry.token_signer import TokenSigner
+
+# Web layer — http, controllers, routing, results, middleware, views, openapi
+from spry.web import (
+    ActionResult,
+    AuthenticatedController,
+    Controller,
+    ControllerBase,
+    HtmlString,
+    HttpContext,
+    OpenApiBuilder,
+    Request,
+    Response,
+    SpryTemplateEngine,
+    TemplateEngine,
+    UploadedFile,
+    ViewRenderer,
+    bad_request,
+    controller,
+    created,
+    delete,
+    get,
+    no_content,
+    not_found,
+    ok,
+    patch,
+    post,
+    put,
+    serve_static_file,
+)
 
 __all__ = [
     "AppBuilder",

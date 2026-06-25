@@ -4,7 +4,6 @@ from typing import Any, TypeAlias
 
 from spry.http import Response
 
-
 ActionResult: TypeAlias = "Response | dict | list | None | bytes | str"
 
 

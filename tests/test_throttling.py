@@ -62,8 +62,8 @@ class TokenBucketTests(unittest.TestCase):
 
 class RateLimitMiddlewareTests(unittest.TestCase):
     def test_middleware_allows_within_limit(self):
-        from spry.testing import TestClient
         from spry import AppBuilder
+        from spry.testing import TestClient
 
         bucket = TokenBucket(max_requests=5, window=60)
         builder = AppBuilder()
@@ -77,8 +77,8 @@ class RateLimitMiddlewareTests(unittest.TestCase):
             self.assertEqual(resp.status_code, 200)
 
     def test_middleware_blocks_over_limit(self):
-        from spry.testing import TestClient
         from spry import AppBuilder
+        from spry.testing import TestClient
 
         bucket = TokenBucket(max_requests=2, window=60)
         builder = AppBuilder()
@@ -93,8 +93,8 @@ class RateLimitMiddlewareTests(unittest.TestCase):
         self.assertEqual(resp.status_code, 429)
 
     def test_middleware_returns_rate_limit_headers(self):
-        from spry.testing import TestClient
         from spry import AppBuilder
+        from spry.testing import TestClient
 
         bucket = TokenBucket(max_requests=3, window=60)
         builder = AppBuilder()
@@ -108,8 +108,8 @@ class RateLimitMiddlewareTests(unittest.TestCase):
         self.assertEqual(resp.headers["X-RateLimit-Remaining"], "2")
 
     def test_middleware_retry_after_on_block(self):
-        from spry.testing import TestClient
         from spry import AppBuilder
+        from spry.testing import TestClient
 
         bucket = TokenBucket(max_requests=1, window=60)
         builder = AppBuilder()
@@ -124,8 +124,8 @@ class RateLimitMiddlewareTests(unittest.TestCase):
         self.assertIn("X-RateLimit-Remaining", resp.headers)
 
     def test_custom_key_func(self):
-        from spry.testing import TestClient
         from spry import AppBuilder
+        from spry.testing import TestClient
 
         bucket = TokenBucket(max_requests=1, window=60)
         builder = AppBuilder()
@@ -139,8 +139,8 @@ class RateLimitMiddlewareTests(unittest.TestCase):
         self.assertEqual(resp.status_code, 429)
 
     def test_custom_status_code_and_message(self):
-        from spry.testing import TestClient
         from spry import AppBuilder
+        from spry.testing import TestClient
 
         bucket = TokenBucket(max_requests=1, window=60)
         builder = AppBuilder()

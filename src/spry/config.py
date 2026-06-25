@@ -16,7 +16,7 @@ class Configuration:
         self._data = data or {}
 
     @classmethod
-    def load(cls, base_path: str | Path | None = None, file_name: str = "appsettings.json") -> "Configuration":
+    def load(cls, base_path: str | Path | None = None, file_name: str = "appsettings.json") -> Configuration:
         base_dir = Path(base_path or Path.cwd())
         data: dict[str, Any] = {}
 

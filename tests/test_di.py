@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import unittest
-from spry.di import ServiceCollection, ServiceProvider, ServiceScope
+
+from spry.di import ServiceCollection
 
 
 class DiTests(unittest.TestCase):

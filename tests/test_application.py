@@ -6,7 +6,7 @@ import json
 import unittest
 from dataclasses import dataclass
 
-from spry import AppBuilder, Request, controller, get, post
+from spry import AppBuilder, controller, get, post
 
 
 @dataclass(slots=True)

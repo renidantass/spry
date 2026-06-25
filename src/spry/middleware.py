@@ -8,7 +8,6 @@ from spry.di import ServiceScope
 from spry.http import Request, Response
 from spry.routing import RouteDefinition
 
-
 NextHandler = Callable[[], Awaitable[Response] | Response]
 Middleware = Callable[["HttpContext", NextHandler], Awaitable[Any] | Any]
 
