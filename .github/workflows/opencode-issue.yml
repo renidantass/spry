@@ -25,6 +25,12 @@ jobs:
           ref: main
           fetch-depth: 0
 
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
       - name: Create branch from issue title
         id: branch
         run: |
@@ -45,9 +51,7 @@ jobs:
       - name: Install quality tools
         run: |
           python -m pip install --upgrade pip
-          pip install -e .
-          pip install -e ".[all]"
-          pip install ruff mypy
+          pip install -e . ruff mypy
 
       - name: Configure Go API key
         run: python3 -c "import json, os; p=os.path.expanduser('~/.config/opencode/opencode.json'); os.makedirs(os.path.dirname(p), exist_ok=True); c=json.load(open(p)) if os.path.exists(p) else {}; c.setdefault('provider',{})['opencode-go']={'options':{'apiKey':os.environ['OPENCODE_GO_API_KEY']}}; json.dump(c, open(p,'w'), indent=2)"
