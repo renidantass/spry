@@ -54,7 +54,7 @@ jobs:
               - Project conventions (type hints, dataclasses, conventional commits)
 
             ## Phase 3: Write decision
-            Based on your review, write your decision to /home/runner/work/_temp/review_decision.txt
+            Based on your review, write your decision to .review_decision
             followed by your feedback. Use exactly one of these formats:
 
             For solid code:
@@ -82,7 +82,7 @@ jobs:
         id: review
         run: |
           PR_NUMBER=${{ github.event.number }}
-          DECISION_FILE="/home/runner/work/_temp/review_decision.txt"
+          DECISION_FILE=".review_decision"
           if [ ! -f "$DECISION_FILE" ]; then
             echo "No decision file found — skipping review action"
             echo "decision=none" >> "$GITHUB_OUTPUT"
