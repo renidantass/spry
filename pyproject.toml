@@ -51,7 +51,7 @@ include-package-data = true
 where = ["src"]
 
 [tool.setuptools.package-data]
-spry = ["templates/**/*"]
+spry = ["templates/**/*", "locale/**/*"]
 
 [tool.commitizen]
 name = "cz_conventional_commits"

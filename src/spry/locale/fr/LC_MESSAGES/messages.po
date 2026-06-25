@@ -1,0 +1,320 @@
+# French translations for Spry.
+# Copyright (C) 2024 Spry
+# This file is distributed under the same license as the Spry package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: spry-core\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-01 00:00+0000\n"
+"PO-Revision-Date: 2024-01-01 00:00+0000\n"
+"Language-Team: French\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+msgid "Not Found"
+msgstr "Non trouvé"
+
+msgid "Forbidden"
+msgstr "Interdit"
+
+msgid "Unauthorized"
+msgstr "Non autorisé"
+
+msgid "Bad Request"
+msgstr "Requête invalide"
+
+msgid "Internal Server Error"
+msgstr "Erreur interne du serveur"
+
+msgid "Welcome"
+msgstr "Bienvenue"
+
+msgid "Home"
+msgstr "Accueil"
+
+msgid "About"
+msgstr "À propos"
+
+msgid "Contact"
+msgstr "Contact"
+
+msgid "Submit"
+msgstr "Envoyer"
+
+msgid "Cancel"
+msgstr "Annuler"
+
+msgid "Save"
+msgstr "Enregistrer"
+
+msgid "Delete"
+msgstr "Supprimer"
+
+msgid "Edit"
+msgstr "Modifier"
+
+msgid "Create"
+msgstr "Créer"
+
+msgid "Update"
+msgstr "Mettre à jour"
+
+msgid "Search"
+msgstr "Rechercher"
+
+msgid "Login"
+msgstr "Connexion"
+
+msgid "Logout"
+msgstr "Déconnexion"
+
+msgid "Register"
+msgstr "S'inscrire"
+
+msgid "Email"
+msgstr "E-mail"
+
+msgid "Password"
+msgstr "Mot de passe"
+
+msgid "Name"
+msgstr "Nom"
+
+msgid "First Name"
+msgstr "Prénom"
+
+msgid "Last Name"
+msgstr "Nom de famille"
+
+msgid "Address"
+msgstr "Adresse"
+
+msgid "Phone"
+msgstr "Téléphone"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "Title"
+msgstr "Titre"
+
+msgid "Category"
+msgstr "Catégorie"
+
+msgid "Tags"
+msgstr "Étiquettes"
+
+msgid "Status"
+msgstr "Statut"
+
+msgid "Actions"
+msgstr "Actions"
+
+msgid "Yes"
+msgstr "Oui"
+
+msgid "No"
+msgstr "Non"
+
+msgid "Back"
+msgstr "Retour"
+
+msgid "Next"
+msgstr "Suivant"
+
+msgid "Previous"
+msgstr "Précédent"
+
+msgid "Page"
+msgstr "Page"
+
+msgid "of"
+msgstr "sur"
+
+msgid "Loading..."
+msgstr "Chargement..."
+
+msgid "Error"
+msgstr "Erreur"
+
+msgid "Success"
+msgstr "Succès"
+
+msgid "Warning"
+msgstr "Avertissement"
+
+msgid "Information"
+msgstr "Information"
+
+msgid "Confirm"
+msgstr "Confirmer"
+
+msgid "Are you sure?"
+msgstr "Êtes-vous sûr ?"
+
+msgid "item"
+msgid_plural "items"
+msgstr[0] "élément"
+msgstr[1] "éléments"
+
+msgid "day"
+msgid_plural "days"
+msgstr[0] "jour"
+msgstr[1] "jours"
+
+msgid "hour"
+msgid_plural "hours"
+msgstr[0] "heure"
+msgstr[1] "heures"
+
+msgid "minute"
+msgid_plural "minutes"
+msgstr[0] "minute"
+msgstr[1] "minutes"
+
+msgid "second"
+msgid_plural "seconds"
+msgstr[0] "seconde"
+msgstr[1] "secondes"
+
+msgid "Hello"
+msgstr "Bonjour"
+
+msgid "Goodbye"
+msgstr "Au revoir"
+
+msgid "Thank you"
+msgstr "Merci"
+
+msgid "Please"
+msgstr "S'il vous plaît"
+
+msgid "Sorry"
+msgstr "Désolé"
+
+msgid "Help"
+msgstr "Aide"
+
+msgid "Settings"
+msgstr "Paramètres"
+
+msgid "Profile"
+msgstr "Profil"
+
+msgid "Dashboard"
+msgstr "Tableau de bord"
+
+msgid "Notifications"
+msgstr "Notifications"
+
+msgid "Message"
+msgstr "Message"
+
+msgid "Messages"
+msgstr "Messages"
+
+msgid "Comment"
+msgstr "Commentaire"
+
+msgid "Comments"
+msgstr "Commentaires"
+
+msgid "Share"
+msgstr "Partager"
+
+msgid "Download"
+msgstr "Télécharger"
+
+msgid "Upload"
+msgstr "Téléverser"
+
+msgid "Print"
+msgstr "Imprimer"
+
+msgid "Export"
+msgstr "Exporter"
+
+msgid "Import"
+msgstr "Importer"
+
+msgid "Filter"
+msgstr "Filtrer"
+
+msgid "Sort by"
+msgstr "Trier par"
+
+msgid "Ascending"
+msgstr "Croissant"
+
+msgid "Descending"
+msgstr "Décroissant"
+
+msgid "Clear"
+msgstr "Effacer"
+
+msgid "Close"
+msgstr "Fermer"
+
+msgid "Open"
+msgstr "Ouvrir"
+
+msgid "More"
+msgstr "Plus"
+
+msgid "Less"
+msgstr "Moins"
+
+msgid "All"
+msgstr "Tout"
+
+msgid "None"
+msgstr "Aucun"
+
+msgid "New"
+msgstr "Nouveau"
+
+msgid "Old"
+msgstr "Ancien"
+
+msgid "Active"
+msgstr "Actif"
+
+msgid "Inactive"
+msgstr "Inactif"
+
+msgid "Enabled"
+msgstr "Activé"
+
+msgid "Disabled"
+msgstr "Désactivé"
+
+msgid "Published"
+msgstr "Publié"
+
+msgid "Draft"
+msgstr "Brouillon"
+
+msgid "Archived"
+msgstr "Archivé"
+
+msgid "Pending"
+msgstr "En attente"
+
+msgid "Completed"
+msgstr "Terminé"
+
+msgid "Failed"
+msgstr "Échoué"
+
+msgid "Read more"
+msgstr "Lire la suite"
+
+msgid "Show more"
+msgstr "Afficher plus"
+
+msgid "Show less"
+msgstr "Afficher moins"

@@ -8,6 +8,10 @@ from typing import Any
 
 logger = logging.getLogger("spry.i18n")
 
+BUILTIN_LOCALE_DIR = Path(__file__).parent / "locale"
+
+_UNSET: Any = object()
+
 
 class _DictTranslations(gettext.GNUTranslations):
     def __init__(self, mapping: dict[str, str]) -> None:
@@ -16,8 +20,11 @@ class _DictTranslations(gettext.GNUTranslations):
 
 
 class I18nService:
-    def __init__(self, locale_dir: str | Path | None = None, default_locale: str = "en") -> None:
-        self._locale_dir = Path(locale_dir) if locale_dir else None
+    def __init__(self, locale_dir: str | Path | None = _UNSET, default_locale: str = "en") -> None:
+        if locale_dir is _UNSET:
+            self._locale_dir = BUILTIN_LOCALE_DIR if BUILTIN_LOCALE_DIR.exists() else None
+        else:
+            self._locale_dir = Path(locale_dir) if locale_dir else None
         self._default_locale = default_locale
         self._current_locale = default_locale
         self._translations: dict[str, gettext.GNUTranslations] = {}
